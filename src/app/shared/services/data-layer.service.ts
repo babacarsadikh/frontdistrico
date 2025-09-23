@@ -27,8 +27,8 @@ export class DataLayerService {
     private _total$ = new BehaviorSubject<number>(0);
 
 
-  private apiUrl = 'https://api.districobon.com';
-    //private apiUrl = 'http://localhost:8080';
+ // private apiUrl = 'https://api.districobon.com';
+    private apiUrl = 'http://localhost:8080';
 
     constructor(private http: HttpClient) { }
 
@@ -42,6 +42,25 @@ export class DataLayerService {
    getLivraisonById(id): Observable<any[]> {
       return this.http.get<any[]>(`${this.apiUrl}/livraisons/${id}`);
     }
+   getCommandeClient(id: number, filters?: any): Observable<any> {
+  let url = `${this.apiUrl}/clients/${id}/commandes`;
+
+  // Ajouter les filtres s'ils sont fournis
+  if (filters) {
+    const params = new URLSearchParams();
+
+    if (filters.date_debut) params.append('date_debut', filters.date_debut);
+    if (filters.date_fin) params.append('date_fin', filters.date_fin);
+    if (filters.statut) params.append('statut', filters.statut);
+
+    const queryString = params.toString();
+    if (queryString) {
+      url += '?' + queryString;
+    }
+  }
+
+  return this.http.get<any>(url);
+}
    getLivraisonEvolution (date ) :Observable<any[]>{
     return this.http.get<any[]>(`${this.apiUrl}/livraisons/evolutions?date=${date}`);
    }

@@ -11,6 +11,13 @@
     <!-- CARD ICON -->
   <div class="row">
       <div class="col-lg-6 col-md-6 col-sm-6">
+        <div class="card card-icon-big mb-4" (click)="openraaportmodel()">
+          <div class="card-body text-center">
+            <p class="text-primary text-24 mt-2 mb-2">Rapport de production par client</p>
+          </div>
+        </div>
+      </div>
+      <!-- <div class="col-lg-6 col-md-6 col-sm-6">
         <div class="card card-icon mb-4">
           <div class="card-body text-center">
             <i class="i-Receipt"></i>
@@ -20,84 +27,104 @@
 
           </div>
         </div>
-      </div>
+      </div> -->
 
-      <div class="col-lg-6 col-md-6 col-sm-6">
+      <!-- <div class="col-lg-6 col-md-6 col-sm-6">
         <div class="card card-icon mb-4">
           <div class="card-body text-center">
             <i class="i-Receipt"></i>
             <p class="text-primary text-24 t-2 mb-2">PRODUCTION :({{nmbrelivraison}} )</p>
-            <!-- <p class="text-primary text-24 line-height-1 m-0"><small>Livraisons</small> </p> -->
             <p style="color: red;"  class="text-24 line-height-1 m-0"><small>Quantité:</small>  {{totalalivre}}  m³</p>
 
           </div>
         </div>
-      </div>
+      </div> -->
 
 
 
 
-      <div class="col-lg-6 col-md-6 col-sm-6">
-        <div class="card card-icon-big mb-4" (click)="openraaportmodel()">
-          <div class="card-body text-center">
-            <p class="text-primary text-24 mt-2 mb-2">Générer un rapport PDF</p>
-          </div>
-        </div>
-      </div>
 
-      <div class="col-lg-6 col-md-6 col-sm-6">
-        <div class="card card-icon-big mb-4">
-          <div class="card-body text-center">
-            <p class="text-primary text-24 mt-2 mb-2">+</p>
 
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 
-  <div class="col-lg-6 col-md-12">
-    <div class="card mb-4">
-      <div class="card-body p-0">
-        <h5 class="card-title m-0 p-3">PRODUCTION DU JOUR  {{Datedujour}} </h5>
 
-        <div echarts [options]="chartOptions" style="width: 100%; height: 400px;"></div>
-           </div>
-    </div>
-  </div>
 
 </div>
 
 <ng-template #generationrapport let-modal>
   <div class="modal-header">
+    <h5 class="modal-title">Génération de rapport client</h5>
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('close')"></button>
   </div>
 
-  <div class="modal-body text-center">
-    <p><strong>SÉLECTIONNEZ UNE PLAGE DE DATES</strong></p>
+  <div class="modal-body">
+    <p class="text-center"><strong>SÉLECTIONNEZ UN CLIENT ET DES FILTRES</strong></p>
 
-    <!-- Inputs pour sélectionner la plage de dates -->
-    <div class="d-flex justify-content-center gap-3 mt-3">
-      <div class="form-group">
-        <label for="dateDebut" class="form-label">Date de début</label>
-        <input type="date" id="dateDebut" class="form-control" [(ngModel)]="dateDebut">
+    <!-- Sélection du client -->
+    <div class="form-floating mb-3">
+      <select class="form-select" [(ngModel)]="clienselectione" name="client" id="client">
+        <option [ngValue]="null" selected>-- Sélectionner un client --</option>
+        <option *ngFor="let client of Clients" [value]="client.id">
+          {{ client.nom }} {{ client.prenom }} - {{ client.entreprise }}
+        </option>
+      </select>
+      <label for="client">Sélectionner Client :</label>
+    </div>
+
+    <!-- Filtres par date -->
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input type="date" class="form-control" [(ngModel)]="dateDebut" id="dateDebut" name="dateDebut">
+          <label for="dateDebut">Date de début</label>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="dateFin" class="form-label">Date de fin</label>
-        <input type="date" id="dateFin" class="form-control" [(ngModel)]="dateFin">
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input type="date" class="form-control" [(ngModel)]="dateFin" id="dateFin" name="dateFin">
+          <label for="dateFin">Date de fin</label>
+        </div>
       </div>
     </div>
 
+    <!-- Filtre par statut -->
+    <div class="form-floating mb-3">
+      <select class="form-select" [(ngModel)]="statutFiltre" name="statut" id="statut">
+        <option [ngValue]="null" selected>-- Tous les statuts --</option>
+        <option value="en_attente">En attente</option>
+        <option value="en_cours">En cours</option>
+        <option value="livree">Livrée</option>
+        <option value="annulee">Annulée</option>
+      </select>
+      <label for="statut">Filtrer par statut</label>
+    </div>
+
+    <!-- Options rapides pour les dates -->
+
+
+    <!-- Résumé des filtres sélectionnés -->
+    <div *ngIf="aFiltresActifs()" class="alert alert-info py-2">
+      <small>
+        <strong>Filtres actifs :</strong>
+        <span *ngIf="dateDebut || dateFin">
+          Période: {{ dateDebut || 'Début' }} → {{ dateFin || 'Fin' }}
+        </span>
+        <span *ngIf="statutFiltre"> | Statut: {{ getLibelleStatut(statutFiltre) }}</span>
+      </small>
+    </div>
+
     <!-- Boutons alignés sur la même ligne -->
-    <div class="d-flex justify-content-center gap-3 mt-3">
+    <div class="d-flex justify-content-center gap-3 mt-4">
       <button type="button" class="btn btn-outline-secondary" (click)="modal.close()">
         <i class="bi bi-x-circle"></i> Fermer
       </button>
-      <button type="button" class="btn btn-primary" (click)="getLivraisonPlage(modal)">
-        <i class="bi bi-file-earmark-pdf"></i> Générer PDF
+      <button type="button" class="btn btn-primary"
+              [disabled]="!clienselectione"
+              (click)="getCommandeClient()">
+        <i class="bi bi-file-earmark-pdf"></i> Générer le rapport
       </button>
     </div>
   </div>
 </ng-template>
-
 

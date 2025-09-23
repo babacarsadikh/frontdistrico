@@ -42,13 +42,16 @@ export class DashboardV2Component implements OnInit {
   commandes;
   livraison;
   qtecommandes: number | null = null;
-
+  Clients: any[] = [];
+  clienselectione: number | null = null;
+dateDebut: string = '';
+dateFin: string = '';
+statutFiltre: string | null = null;
   commandeData;
+  commandeClientData;
   nmbrelivraison;
   Datedujour;
-  dateDebut;
   totalalivre;
-  dateFin;
   rapportData;
   data = [];
   total_quantite_charge;
@@ -90,6 +93,11 @@ export class DashboardV2Component implements OnInit {
       ]
     };
    }
+    loadClient() {
+      this.dl.getClients().subscribe(res => {
+        this.Clients = res;
+      });
+    }
 
    ngOnInit() {
     // Configuration du graphique en barres
@@ -133,7 +141,7 @@ export class DashboardV2Component implements OnInit {
     // };
 
     // Appel des méthodes pour récupérer les données
-    this.getLivraison();
+    this.loadClient();
     this.getCommandeLength();
     this.getLivraisonEv();
     this.getCommande();
@@ -180,130 +188,227 @@ export class DashboardV2Component implements OnInit {
 
     return transformed;
   }
+// Vérifier si des filtres sont actifs
+aFiltresActifs(): boolean {
+  return !!(this.dateDebut || this.dateFin || this.statutFiltre);
+}
 
-  print(data: any) {
-    console.log("Données à imprimer >", data);
+// Obtenir le libellé du statut
+getLibelleStatut(statut: string): string {
+  const statuts: { [key: string]: string } = {
+    'en_attente': 'En attente',
+    'en_cours': 'En cours',
+    'livree': 'Livrée',
+    'annulee': 'Annulée'
+  };
+  return statuts[statut] || statut;
+}
 
-    // Vérification des données
-    if (!data?.data) {
-      console.error("Données clients manquantes.");
-      return;
-    }
+print(data: any) {
+  console.log("Données à imprimer >", data);
 
-    if (typeof data.total_charge === "undefined") {
-      console.warn("Total charge non défini, utilisation de 0 par défaut.");
-    }
+  // Vérification des données
+  if (!data?.client || !data?.commandes) {
+    console.error("Données client ou commandes manquantes.");
+    return;
+  }
 
-    const pdf = new jsPDF();
-    const img = new Image();
-    img.src = "assets/images/logobeton.png";
+  const pdf = new jsPDF();
+  const img = new Image();
+  img.src = "assets/images/logobeton.png";
 
-    img.onload = () => {
-      // Constantes de configuration
-      const UNIT = "m³";
-      const pageWidth = pdf.internal.pageSize.width;
-      const pageHeight = pdf.internal.pageSize.height;
-      const logoWidth = 70;
-      const logoHeight = 40;
-      const logoX = (pageWidth - logoWidth) / 2;
+  img.onload = () => {
+    // Constantes de configuration
+    const UNIT = "m³";
+    const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
+    const logoWidth = 70;
+    const logoHeight = 40;
+    const logoX = (pageWidth - logoWidth) / 2;
 
-      // Fonction de formatage
-      const formatNumber = (value: number | undefined) => {
-        return value !== undefined ? value.toFixed(2) : '0.00';
-      };
+    // Fonction de formatage
+    const formatNumber = (value: number | string | undefined) => {
+      if (value === undefined || value === null) return '0.00';
+      const num = typeof value === 'string' ? parseFloat(value) : value;
+      return isNaN(num) ? '0.00' : num.toFixed(2);
+    };
 
-      // Logo
-      pdf.addImage(img, "PNG", logoX, 10, logoWidth, logoHeight);
+    // Fonction de formatage de date
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR');
+    };
 
-      // Titre
-      pdf.setFontSize(22);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("RAPPORT DE PRODUCTION", pageWidth / 2, 55, { align: "center" });
+    // Logo
+    pdf.addImage(img, "PNG", logoX, 10, logoWidth, logoHeight);
 
-      // Date et informations
-      const now = new Date();
-      const dateReport = now.toLocaleDateString();
-      const heureReport = now.toLocaleTimeString();
+    // Titre principal
+    pdf.setFontSize(18);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("RAPPORT CLIENT - COMMANDES ET LIVRAISONS", pageWidth / 2, 55, { align: "center" });
 
-      pdf.setFontSize(14);
-      pdf.setFont("helvetica", "normal");
-      pdf.text(`TOTAL PRODUCTION: ${formatNumber(data.total_charge)} ${UNIT}`, 10, 65);
-      pdf.text(`Date: ${dateReport} ${heureReport}`, 10, 72);
+    // Informations du client
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "bold");
+    pdf.text("INFORMATIONS CLIENT:", 14, 65);
 
-      // Ligne de séparation
-      pdf.line(10, 78, pageWidth - 10, 78);
+    pdf.setFont("helvetica", "normal");
+    const clientName = `${data.client.nom} ${data.client.prenom}`.trim();
+    pdf.text(`Client: ${clientName}`, 14, 72);
+    pdf.text(`ID Client: ${data.client.id}`, 14, 78);
 
-      // Préparation des données
-      const summaryData = [];
+    // Date du rapport
+    const now = new Date();
+    const dateReport = now.toLocaleDateString('fr-FR');
+    const heureReport = now.toLocaleTimeString('fr-FR');
+    pdf.text(`Date du rapport: ${dateReport} à ${heureReport}`, 14, 84);
 
-      for (const client in data.data) {
-        if (data.data.hasOwnProperty(client)) {
-          const formules = data.data[client];
-          for (const formule in formules) {
-            if (formules.hasOwnProperty(formule)) {
-              const formuleData = formules[formule];
+    // Statistiques résumées
+    const totalCommandes = data.commandes.length;
+    const totalQuantiteCommandee = data.commandes.reduce((sum: number, cmd: any) =>
+      sum + parseFloat(cmd.quantite_commandee || 0), 0);
+    const totalQuantiteLivree = data.commandes.reduce((sum: number, cmd: any) =>
+      sum + (cmd.quantite_livree || 0), 0);
 
-              if (formuleData && typeof formuleData === "object") {
-                const totalCommandee = formuleData.total_commande ?? 0;
-                const totalChargee = formuleData.total_charge ?? 0;
+    pdf.setFont("helvetica", "bold");
+    pdf.text("RÉSUMÉ:", 14, 94);
+    pdf.setFont("helvetica", "normal");
+    pdf.text(`Nombre de commandes: ${totalCommandes}`, 14, 100);
+    pdf.text(`Quantité totale commandée: ${formatNumber(totalQuantiteCommandee)} ${UNIT}`, 14, 106);
+    pdf.text(`Quantité totale livrée: ${formatNumber(totalQuantiteLivree)} ${UNIT}`, 14, 112);
 
-                summaryData.push([
-                  client || "Client inconnu",
-                  formule || "Formulation non spécifiée",
-                  `${formatNumber(totalCommandee)} ${UNIT}`,
-                  `${formatNumber(totalChargee)} ${UNIT}`
-                ]);
-              } else {
-                console.warn(`Données invalides pour ${client} / ${formule}`, formuleData);
-              }
-            }
-          }
-        }
+    // Ligne de séparation
+    pdf.line(10, 118, pageWidth - 10, 118);
+
+    let startY = 125;
+
+    // Parcourir chaque commande
+    data.commandes.forEach((commande: any, index: number) => {
+      // Vérifier si on besoin d'une nouvelle page
+      if (startY > pageHeight - 100) {
+        pdf.addPage();
+        startY = 20;
       }
 
-      // Tableau des données
-      autoTable(pdf, {
-        startY: 85,
-        head: [["Clients", "Formulations", "Total Commandé", "Total Livré"]],
-        body: summaryData,
-        theme: "grid",
-        styles: {
-          fontSize: 11,
-          cellPadding: 3,
-        },
-        headStyles: {
-          fillColor: [41, 128, 185],
-          textColor: 255,
-          halign: "center",
-        },
-        bodyStyles: {
-          halign: "left",
-        },
-        columnStyles: {
-          0: { cellWidth: 40 },  // Colonne Clients
-          1: { cellWidth: 40 },  // Colonne Formulations
-          2: { cellWidth: 30, halign: 'right' },  // Total Commandé
-          3: { cellWidth: 30, halign: 'right' }   // Total Livré
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245],
-        },
-      });
+      // En-tête de la commande
+      pdf.setFontSize(12);
+      pdf.setFont("helvetica", "bold");
+      pdf.text(`COMMANDE ${index + 1}: ${commande.reference}`, 14, startY);
 
-      // Pied de page
+      // Détails de la commande
       pdf.setFontSize(10);
-      pdf.text("DC BETON - Tous droits réservés.", 10, pageHeight - 10);
+      pdf.setFont("helvetica", "normal");
 
-      // Génération du PDF
-      pdf.autoPrint();
-      const pdfBlob = pdf.output("bloburl");
-      window.open(pdfBlob);
-    };
+      pdf.text(`Date commande: ${formatDate(commande.date_commande)}`, 14, startY + 7);
+      pdf.text(`Chantier: ${commande.nom_chantier}`, 14, startY + 14);
+      pdf.text(`Formule béton: ${commande.formule_beton}`, 14, startY + 21);
+      pdf.text(`Statut: ${commande.statut}`, 14, startY + 28);
 
-    img.onerror = () => {
-      console.error("Erreur lors du chargement de l'image.");
-    };
-  }
+      // Quantités
+      pdf.text(`Quantité commandée: ${formatNumber(commande.quantite_commandee)} ${UNIT}`, 100, startY + 7);
+      pdf.text(`Quantité livrée: ${formatNumber(commande.quantite_livree)} ${UNIT}`, 100, startY + 14);
+      pdf.text(`Quantité restante: ${formatNumber(commande.quantite_restante)} ${UNIT}`, 100, startY + 21);
+      pdf.text(`Pourcentage livré: ${commande.pourcentage_livre}%`, 100, startY + 28);
+
+      startY += 35;
+
+      // Tableau des livraisons pour cette commande
+      if (commande.livraisons && commande.livraisons.length > 0) {
+        pdf.setFont("helvetica", "bold");
+        pdf.text("LIVRAISONS:", 14, startY);
+        startY += 7;
+
+        // Préparation des données du tableau
+        const livraisonsData = commande.livraisons.map((livraison: any, livIndex: number) => [
+          (livIndex + 1).toString(),
+          livraison.reference,
+          formatDate(livraison.date_production),
+          `${formatNumber(livraison.quantite_chargee)} ${UNIT}`,
+          livraison.statut,
+          livraison.chauffeur_nom ? `${livraison.chauffeur_nom} ${livraison.chauffeur_prenom}`.trim() : 'N/A',
+          livraison.plaque_immatriculation || 'N/A'
+        ]);
+
+        autoTable(pdf, {
+          startY: startY,
+          head: [["#", "Référence", "Date", "Quantité", "Statut", "Chauffeur", "Camion"]],
+          body: livraisonsData,
+          theme: "grid",
+          styles: {
+            fontSize: 8,
+            cellPadding: 2,
+          },
+          headStyles: {
+            fillColor: [52, 152, 219],
+            textColor: 255,
+            fontSize: 9,
+            halign: "center",
+          },
+          bodyStyles: {
+            halign: "left",
+          },
+          columnStyles: {
+            0: { cellWidth: 8, halign: 'center' },   // #
+            1: { cellWidth: 25 },                    // Référence
+            2: { cellWidth: 20 },                    // Date
+            3: { cellWidth: 18, halign: 'right' },   // Quantité
+            4: { cellWidth: 15, halign: 'center' },  // Statut
+            5: { cellWidth: 25 },                    // Chauffeur
+            6: { cellWidth: 20 }                     // Camion
+          },
+          margin: { left: 14, right: 14 },
+          tableWidth: 'auto'
+        });
+
+        startY = (pdf as any).lastAutoTable.finalY + 10;
+      } else {
+        pdf.setFont("helvetica", "italic");
+        pdf.text("Aucune livraison pour cette commande", 14, startY);
+        startY += 10;
+      }
+
+      // Séparation entre les commandes
+      if (index < data.commandes.length - 1) {
+        pdf.line(10, startY, pageWidth - 10, startY);
+        startY += 15;
+      }
+    });
+
+    // Résumé final
+    if (startY < pageHeight - 50) {
+      pdf.setFontSize(11);
+      pdf.setFont("helvetica", "bold");
+      pdf.text("RÉSUMÉ GÉNÉRAL", pageWidth / 2, startY + 10, { align: "center" });
+
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`Total commandes: ${totalCommandes}`, 14, startY + 20);
+      pdf.text(`Quantité totale commandée: ${formatNumber(totalQuantiteCommandee)} ${UNIT}`, 14, startY + 27);
+      pdf.text(`Quantité totale livrée: ${formatNumber(totalQuantiteLivree)} ${UNIT}`, 14, startY + 34);
+
+      const pourcentageTotal = totalQuantiteCommandee > 0 ?
+        ((totalQuantiteLivree / totalQuantiteCommandee) * 100).toFixed(2) : '0.00';
+      pdf.text(`Pourcentage global livré: ${pourcentageTotal}%`, 14, startY + 41);
+    }
+
+    // Pied de page
+    pdf.setFontSize(8);
+    pdf.setTextColor(128);
+    pdf.text("DC BETON - Rapport généré automatiquement - Tous droits réservés.",
+             pageWidth / 2, pageHeight - 10, { align: "center" });
+
+    // Génération du PDF
+    pdf.autoPrint();
+    const pdfBlob = pdf.output("bloburl");
+    window.open(pdfBlob);
+  };
+
+  img.onerror = () => {
+    console.error("Erreur lors du chargement de l'image.");
+    // Générer le PDF même sans image
+    // ... (code de génération sans image)
+  };
+}
 
   getCommandeLength (){
     const today = new Date();
@@ -358,6 +463,28 @@ export class DashboardV2Component implements OnInit {
 
     });
   }
+  getCommandeClient() {
+    // Préparation des filtres
+  const filters: any = {};
+
+  if (this.dateDebut) filters.date_debut = this.dateDebut;
+  if (this.dateFin) filters.date_fin = this.dateFin;
+  if (this.statutFiltre) filters.statut = this.statutFiltre;
+     this.dl.getCommandeClient(this.clienselectione , filters)
+    .subscribe(res => {
+        this.commandeClientData = res
+        this.print(res)
+        this.clearFiltres()
+      //  console.log(res)
+
+    });
+  }
+  clearFiltres(): void {
+  this.dateDebut = '';
+  this.dateFin = '';
+  this.statutFiltre = null;
+  this.clienselectione= null;
+}
   getLivraisonPlage (modal) {
    // console.log(this.dateDebut)
     this.dl.getLivraisonPlageDate(this.dateDebut, this.dateFin)
