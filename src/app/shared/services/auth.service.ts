@@ -10,7 +10,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
   providedIn: "root"
 })
 export class AuthService {
-  private apiUrl =  'http://api.districobon.com';
+  private apiUrl =  'https://api.districobon.com';
   private jwtHelper = new JwtHelperService();
 
   constructor(
