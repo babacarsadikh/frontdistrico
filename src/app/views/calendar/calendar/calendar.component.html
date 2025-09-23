@@ -1,0 +1,131 @@
+<div class="breadcrumb">
+  <h1>PARAMÈTRE FORMULES</h1>
+</div>
+
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="mb-4">
+  <button class="btn btn-rounded btn-primary" (click)="openFormuleModal(formuleModal)">
+    <i class="i-Laboratory"></i> Nouvelle Formule
+  </button>
+</div>
+
+<div class="card o-hidden">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Nom</th>
+        <th>Description</th>
+        <th>Prix (FCFA / m³)</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let f of formules">
+        <td>{{ f.nom }}</td>
+        <td>{{ f.description || '-' }}</td>
+        <td>{{ f.prix_metre_cube }}</td>
+        <td>
+          <span class="badge" [ngClass]="f.actif ? 'bg-success' : 'bg-secondary'">
+            {{ f.actif ? 'Actif' : 'Inactif' }}
+          </span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-outline-danger" (click)="deleteFormule(f.id)">
+            <i class="i-Remove-Basket"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal Ajout Formule -->
+<ng-template #formuleModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Ajouter une Formule</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+  <div class="modal-body">
+    <form #formuleForm="ngForm">
+      <!-- Nom Formule -->
+      <div class="form-group mb-3">
+        <label for="nom">Nom de la Formule</label>
+        <input
+          id="nom"
+          type="text"
+          class="form-control"
+          [(ngModel)]="newFormule.nom"
+          name="nom"
+          required
+          placeholder="Ex: C25"
+        />
+        <div *ngIf="formuleForm.submitted && !newFormule.nom" class="text-danger">
+          Ce champ est requis.
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="form-group mb-3">
+        <label for="description">Description</label>
+        <textarea
+          id="description"
+          class="form-control"
+          [(ngModel)]="newFormule.description"
+          name="description"
+          placeholder="Ajoutez une note (optionnel)"
+        ></textarea>
+      </div>
+
+      <!-- Prix -->
+      <div class="form-group mb-3">
+        <label for="prix">Prix (FCFA / m³)</label>
+        <input
+          id="prix"
+          type="number"
+          class="form-control"
+          [(ngModel)]="newFormule.prix_metre_cube"
+          name="prix_metre_cube"
+          required
+          step="0.01"
+          placeholder="0.00"
+        />
+        <div *ngIf="formuleForm.submitted && !newFormule.prix_metre_cube" class="text-danger">
+          Ce champ est requis.
+        </div>
+      </div>
+
+      <!-- Actif -->
+      <div class="form-group mb-3 form-check">
+        <input
+          id="actif"
+          type="checkbox"
+          class="form-check-input"
+          [(ngModel)]="newFormule.actif"
+          name="actif"
+          [checked]="true"
+        />
+        <label for="actif" class="form-check-label">Actif</label>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      (click)="onSaveFormule(modal, formuleForm)"
+    >
+      Enregistrer
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="modal.dismiss('Cancel click')"
+    >
+      Annuler
+    </button>
+  </div>
+</ng-template>

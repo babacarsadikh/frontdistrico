@@ -1,0 +1,47 @@
+<div class="card o-hidden" [@animate]="{value:'*',params:{y:'120px',opacity:'0',delay:'100ms', duration: '400ms'}}">
+  <div class="row justify-content-center me-0">
+    <div class="col-md-6">
+      <div class="p-4">
+        <!-- Logo -->
+        <div class="auth-logo text-center mb-4">
+          <img src="assets/images/logobeton.png" alt="Logo de l'application">
+        </div>
+
+        <!-- Titre -->
+        <h1 class="mb-3 text-18 text-center">CONNEXION</h1>
+
+        <!-- Formulaire de connexion -->
+        <form [formGroup]="signinForm" (ngSubmit)="signin()">
+          <!-- Champ Email -->
+          <div class="form-group">
+            <label for="login">Login</label>
+            <input
+              id="login"
+              class="form-control form-control-rounded"
+              formControlName="login"
+              type="text"
+              placeholder="Entrez votre login"
+            >
+          </div>
+
+          <!-- Champ Mot de passe -->
+          <div class="form-group">
+            <label for="mot_de_passe">Mot de passe</label>
+            <input
+              id="mot_de_passe"
+              class="form-control form-control-rounded"
+              formControlName="mot_de_passe"
+              type="password"
+              placeholder="Entrez votre mot de passe"
+            >
+          </div>
+
+          <!-- Bouton de connexion -->
+          <button type="submit" class="btn btn-primary btn-rounded w-100 mt-3">
+            Se connecter
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<div class="breadcrumb">
+  <h1>GESTION DES OPÉRATEURS</h1>
+</div>
+
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="row mb-3">
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <button class="btn plusbtn btn-primary float-right" (click)="openNewOperateurModal(newOperateurModal)">
+        <i class="i-Add"></i> NOUVEL OPÉRATEUR
+      </button>
+    </div>
+  </div>
+
+  <div class="col-md-12">
+    <div class="card o-hidden">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th scope="col">NOM OPÉRATEUR</th>
+            <th scope="col">EMAIL</th>
+            <th scope="col">TÉLÉPHONE</th>
+            <th scope="col">STATUT</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let operateur of operateurs">
+            <td>{{ operateur.nomoperateur }}</td>
+            <td>{{ operateur.adresse_email }}</td>
+            <td>{{ operateur.telephone }}</td>
+            <td>
+              <span *ngIf="operateur.etat_connexion" class="badge bg-success">Connecté</span>
+              <span *ngIf="!operateur.etat_connexion" class="badge bg-danger">Déconnecté</span>
+            </td>
+            <td>
+              <button class="btn btn-outline-primary me-2" (click)="openEditOperateurModal(operateur, editOperateurModal); $event.stopPropagation()">
+                <i class="i-Pen-2"></i>
+              </button>
+              <button class="btn btn-outline-danger" (click)="deleteOperateur(operateur.id, deleteConfirmModal); $event.stopPropagation()">
+                <i class="i-Remove-Basket"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Création Nouvel Opérateur -->
+<ng-template #newOperateurModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Créer un Nouvel Opérateur</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="newOperateurForm">
+      <div class="mb-3">
+        <label for="nomoperateur" class="form-label">Nom de l'Opérateur</label>
+        <input type="text" id="nomoperateur" class="form-control" formControlName="nomoperateur" required>
+      </div>
+      <div class="mb-3">
+        <label for="adresse_email" class="form-label">Email</label>
+        <input type="email" id="adresse_email" class="form-control" formControlName="adresse_email" required>
+      </div>
+      <div class="mb-3">
+        <label for="telephone" class="form-label">Téléphone</label>
+        <input type="text" id="telephone" class="form-control" formControlName="telephone" required>
+      </div>
+      <div class="mb-3">
+        <label for="motdepasse" class="form-label">Mot de passe</label>
+        <input type="password" id="motdepasse" class="form-control" formControlName="motdepasse" required>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="submit" class="btn btn-primary" [disabled]="newOperateurForm.invalid" (click)="createOperateur()">Créer</button>
+  </div>
+</ng-template>
+
+<!-- Modal Confirmation de suppression -->
+<ng-template #deleteConfirmModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Supprimer opérateur</h4>
+    <button type="button" class="btn-close" aria-label="Close button" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Êtes-vous sûr de vouloir supprimer cet opérateur ?</strong></p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="button" class="btn btn-danger btn-rounded" (click)="modal.close('Ok')">Supprimer</button>
+  </div>
+</ng-template>
+
+<!-- Modal Mise à jour Opérateur -->
+<ng-template #editOperateurModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Modifier l'Opérateur</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form [formGroup]="editOperateurForm">
+      <div class="mb-3">
+        <label for="edit_nomoperateur" class="form-label">Nom de l'Opérateur</label>
+        <input type="text" id="edit_nomoperateur" class="form-control" formControlName="nomoperateur" required>
+      </div>
+      <div class="mb-3">
+        <label for="edit_adresse_email" class="form-label">Email</label>
+        <input type="email" id="edit_adresse_email" class="form-control" formControlName="adresse_email" required>
+      </div>
+      <div class="mb-3">
+        <label for="edit_telephone" class="form-label">Téléphone</label>
+        <input type="text" id="edit_telephone" class="form-control" formControlName="telephone" required>
+      </div>
+      <div class="mb-3">
+        <label for="edit_motdepasse" class="form-label">Mot de passe (laisser vide pour ne pas changer)</label>
+        <input type="password" id="edit_motdepasse" class="form-control" formControlName="motdepasse">
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="submit" class="btn btn-primary" [disabled]="editOperateurForm.invalid" (click)="updateOperateur()">Enregistrer</button>
+  </div>
+</ng-template>

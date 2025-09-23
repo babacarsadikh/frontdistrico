@@ -1,0 +1,54 @@
+@echo off
+echo ================================
+echo LANCEMENT DES SERVICES EN LOCAL
+echo ================================
+
+REM Démarrer Apache via XAMPP
+echo [1/4] Démarrage du serveur Apache...
+cd "C:\chemin\vers\xampp"
+start "" "apache_start.bat"
+if %errorlevel% neq 0 (
+    echo Erreur : Impossible de démarrer Apache. Vérifiez si Apache est installé correctement.
+    pause
+    exit /b
+)
+echo Apache démarré avec succès.
+
+REM Démarrer MySQL via XAMPP
+echo [2/4] Démarrage du serveur MySQL...
+cd "C:\chemin\vers\xampp"
+start "" "mysql_start.bat"
+if %errorlevel% neq 0 (
+    echo Erreur : Impossible de démarrer MySQL. Vérifiez si MySQL est installé correctement.
+    pause
+    exit /b
+)
+echo MySQL démarré avec succès.
+
+REM Démarrer l'API Python
+echo [3/4] Lancement de l'API Python...
+cd "C:\chemin\vers\votre\api"
+start "" cmd /k python app.py
+if %errorlevel% neq 0 (
+    echo Erreur : Impossible de lancer l'API Python. Vérifiez la configuration et les dépendances.
+    pause
+    exit /b
+)
+echo API Python démarrée avec succès.
+
+REM Démarrer le serveur Angular
+echo [4/4] Lancement de l'application Angular...
+cd "C:\chemin\vers\dist"
+start "" cmd /k http-server
+if %errorlevel% neq 0 (
+    echo Erreur : Impossible de lancer l'application Angular. Vérifiez la configuration et les dépendances.
+    pause
+    exit /b
+)
+echo Application Angular démarrée avec succès.
+
+REM Fin
+echo ================================
+echo TOUS LES SERVICES SONT OPÉRATIONNELS !
+echo ================================
+pause

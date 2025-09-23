@@ -1,0 +1,235 @@
+<div class="breadcrumb">
+  <h1>BON DE COMMANDE</h1>
+</div>
+
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="row mb-3">
+  <div class="row">
+    <div class="col-md-4 mb-4">
+      <button class="btn plusbtn btn-primary float-right"  (click)="openCommandeModal(ajoutecommande)">
+        <i class="i-Add"></i> NOUVEAU BON DE COMMANDE
+      </button>
+    </div>
+
+  </div>
+
+ <div class="col-md-12">
+  <div class="card o-hidden">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th scope="col">NOM CLIENT</th>
+          <th scope="col">QUANTITÉ</th>
+          <th scope="col">FORMULATION</th>
+          <th scope="col">Date</th>
+          <th scope="col">Reste</th>
+          <th scope="col">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let invoice of commandes | paginate: { itemsPerPage: pageSize, currentPage: page }"
+            [ngStyle]="{'pointer-events': invoice.quantite_restante === '0' ? 'none' : 'auto'}"
+            (click)="invoice.quantite_restante > 0 ? openLivraisonModal(invoice, ajoutelivraison) : null">
+
+          <!-- Nom client -->
+          <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
+            {{ invoice.client_nom }} {{ invoice.client_prenom }}
+          </td>
+
+          <!-- Quantité commandée -->
+          <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
+            {{ invoice.quantite_commandee }}
+          </td>
+
+          <!-- Formule béton -->
+          <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
+            {{ invoice.formule_nom }}
+          </td>
+
+          <!-- Date commande -->
+          <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
+            {{ invoice.date_commande | date:'short' }}
+          </td>
+
+          <!-- Quantité restante -->
+          <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
+            {{ invoice.quantite_restante }}
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <button class="btn btn-outline-danger" (click)="deleteInvoice(invoice.id, deleteConfirmModal); $event.stopPropagation()">
+              <i class="i-Remove-Basket"></i>
+            </button>
+            <button class="btn btn-outline-primary me-2" (click)="openEditQuantiteModal(invoice); $event.stopPropagation()">
+              <i class="i-Edit"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="col-md-12 mt-3 d-flex justify-content-center" *ngIf="commandes?.length">
+      <pagination-controls (pageChange)="page = $event" previousLabel="Précédent" nextLabel="Suivant"></pagination-controls>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- Modal Livraison -->
+<ng-template #ajoutelivraison let-modal>
+  <div class="modal-header">
+      LIVRAISON pour {{ commandeSelectionnee?.client_nom }} {{ commandeSelectionnee?.client_prenom }}
+    <button type="button" class="btn-close" aria-label="Close button" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Quantité commandée :</strong> {{ commandeSelectionnee?.quantite_commandee }}</p>
+    <p><strong>Quantité restante :</strong> {{ commandeSelectionnee?.quantite_restante }}</p>
+    <div class="mb-3">
+      <label for="quantiteCharge" class="form-label">Renseigner la quantité chargée :</label>
+      <input type="number" class="form-control" [(ngModel)]="quantiteChargee" id="quantiteCharge"
+             (input)="validerQuantiteChargee()" />
+      <!-- Message d'erreur -->
+      <div *ngIf="erreurQuantiteChargee" class="text-danger mt-2">
+        La quantité chargée ne peut pas dépasser la quantité restante.
+      </div>
+    </div>
+  <div class="mb-3">
+  <label for="chauffeur" class="form-label">Sélectionner chauffeur :</label>
+  <select class="form-control" [(ngModel)]="chauffeurSelectionne" id="chauffeur" (change)="onChauffeurChange()">
+    <option *ngFor="let chauffeur of chauffeurs" [ngValue]="chauffeur">
+      {{ chauffeur.nom }} {{ chauffeur.prenom }}
+    </option>
+  </select>
+</div>
+
+<div class="mb-3">
+  <label for="plaqueCamion" class="form-label">Plaque Camion :</label>
+  <input type="text" class="form-control" [(ngModel)]="plaqueCamion" id="plaqueCamion" readonly />
+</div>
+
+    <div class="mb-3">
+      <label for="adresse" class="form-label">Adresse de livraison :</label>
+      <input type="text" class="form-control" [(ngModel)]="adresseLivraison" id="adresse" placeholder="Entrez l'adresse de livraison" />
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="button" class="btn btn-success btn-rounded" (click)="confirmerLivraison(modal)" [disabled]="erreurQuantiteChargee">
+      Confirmer
+    </button>
+  </div>
+</ng-template>
+<!-- Modal Livraison -->
+<ng-template #ajoutecommande let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">AJOUTER UNE COMMANDE</h4>
+    <button type="button" class="btn-close" aria-label="Close button" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+  <div class="col-md">
+  <div class="form-floating">
+    <select class="form-select" [(ngModel)]="clienselectione" (change)="onClientChange()" name="client" id="client">
+      <option [ngValue]="null" selected>-- Sélectionner un client --</option>
+      <option *ngFor="let client of Clients" [value]="client.id">
+        {{ client.nom }} {{ client.prenom }} - {{ client.entreprise }}
+      </option>
+    </select>
+    <label for="client">Sélectionner Client :</label>
+  </div>
+</div>
+
+<div class="form-group mb-3">
+  <label for="chantier">Chantier</label>
+  <select id="chantier" class="form-control" [(ngModel)]="chantierSelectione" name="chantier" required>
+    <option [ngValue]="null" selected>-- Sélectionner un chantier --</option>
+    <option *ngFor="let ch of chantiersDuClient" [value]="ch.id">
+      {{ ch.nom_chantier }} - {{ ch.adresse }}
+    </option>
+  </select>
+</div>
+
+
+    <div class="mb-3">
+      <label for="quantitedeCommande" class="form-label">Renseigner la quantité commandée :</label>
+      <div class="input-group">
+        <input type="number" class="form-control" [(ngModel)]="quantitedeCommande" id="quantitedeCommande" />
+        <span class="input-group-text">cm³</span>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label for="chauffeur" class="form-label">Formule:</label>
+      <select class="form-control" [(ngModel)]="formuleselectione" id="chauffeur">
+        <option *ngFor="let fm of formules" [value]="fm.id">
+          {{ fm.nom }}
+        </option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="adresse" class="form-label">Date de commande :</label>
+      <input type="date" class="form-control" id="datecommande" [(ngModel)]="datecommande" />
+
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="button" class="btn btn-success btn-rounded" (click)="confirmAddCommande(modal)">Confirmer</button>
+  </div>
+</ng-template>
+
+<!-- Modal Confirmation de suppression -->
+<ng-template #deleteConfirmModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Supprimer commande</h4>
+    <button type="button" class="btn-close" aria-label="Close button" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <p><strong>Êtes-vous sûr de vouloir supprimer cette commande ?</strong></p>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">Annuler</button>
+    <button type="button" class="btn btn-danger btn-rounded" (click)="modal.close('confirm')">Supprimer</button>
+  </div>
+</ng-template>
+<!-- Modal de Confirmation de Livraison -->
+<ng-template #confirmationLivraisonModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Livraison Confirmée</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('close')"></button>
+  </div>
+
+  <div class="modal-body text-center">
+    <p><strong>La livraison a été ajoutée avec succès !</strong></p>
+
+    <!-- Boutons alignés sur la même ligne -->
+    <div class="d-flex justify-content-center gap-3 mt-3">
+      <button type="button" class="btn btn-outline-secondary" (click)="modal.close()">
+        <i class="bi bi-x-circle"></i> Fermer
+      </button>
+      <button type="button" class="btn btn-primary" (click)="imprimerBonLivraison()">
+        <i class="bi bi-printer"></i> Imprimer Bon de Livraison
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #editQuantiteModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title">Ajouter à la quantité commandée</h5>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <p>Quantité actuelle : {{ selectedCommande?.quantite_commandee }}</p>
+    <input type="number" class="form-control" [(ngModel)]="ajoutQuantite" placeholder="Quantité à ajouter">
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="updateCommande(modal)">Mettre à jour</button>
+  </div>
+</ng-template>
+
+
+
