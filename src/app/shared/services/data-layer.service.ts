@@ -27,8 +27,8 @@ export class DataLayerService {
     private _total$ = new BehaviorSubject<number>(0);
 
 
-  private apiUrl = 'https://api.districobon.com';
-  //  private apiUrl = 'http://localhost:8080';
+  //private apiUrl = 'https://api.districobon.com';
+    private apiUrl = 'http://localhost:8080';
 
     constructor(private http: HttpClient) { }
 

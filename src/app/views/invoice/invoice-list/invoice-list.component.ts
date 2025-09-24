@@ -254,117 +254,211 @@ loadformules() {
   );
 }
 
-   print(element: any) {
+print(element: any) {
   console.log('Données à imprimer > ', element);
 
   // Créer une instance jsPDF en orientation paysage pour A4
-  const pdf = new jsPDF('l', 'mm', 'a4'); // 'l' pour landscape, 'mm' pour millimètres, 'a4' pour format A4
+  const pdf = new jsPDF('l', 'mm', 'a4');
 
   // Convertir l'image en Base64 et l'ajouter
   const img = new Image();
   img.src = 'assets/images/logobeton.png';
 
+  // Image du cachet opérateur
+  const cachetImg = new Image();
+  cachetImg.src = 'assets/images/cachet.png'; // Assurez-vous d'avoir cette image
+
   img.onload = () => {
-    const pageWidth = pdf.internal.pageSize.width; // Largeur de la page paysage (297mm)
-    const pageHeight = pdf.internal.pageSize.height; // Hauteur de la page paysage (210mm)
+    cachetImg.onload = () => {
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+      const bonWidth = (pageWidth - 30) / 2;
+      const centerX = pageWidth / 2;
 
-    // Largeur pour chaque bon (moitié de la page moins les marges)
-    const bonWidth = (pageWidth - 30) / 2; // 30mm de marge totale
-    const centerX = pageWidth / 2;
+      // Fonction pour générer un bon de livraison
+      const genererBon = (startX: number, startY: number) => {
+        // Ajouter le logo
+        const logoWidth = 35;
+        const logoHeight = 20;
+        pdf.addImage(img, 'PNG', startX + 1, startY, logoWidth, logoHeight);
 
-    // Fonction pour générer un bon de livraison
-    const genererBon = (startX: number, startY: number) => {
-      // Ajouter le logo
-      const logoWidth = 35; // Réduit pour s'adapter à la moitié de page
-      const logoHeight = 20;
-      pdf.addImage(img, 'PNG', startX + 1, startY, logoWidth, logoHeight);
+        // Titre
+        pdf.setFontSize(15);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("BON DE LIVRAISON", startX + bonWidth / 2, startY + 25, { align: "center" });
 
-      // Titre
-      pdf.setFontSize(14);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("BON DE LIVRAISON", startX + bonWidth / 2, startY + 25, { align: "center" });
+        // Informations client
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("CLIENT: " + element.client_nom + " " + element.client_prenom, startX + 5, startY + 35);
+        pdf.text("Adresse Chantier : " + (element.adresseLivraison || element.chantier_adresse || "Non spécifiée"), startX + 5, startY + 40);
+        pdf.text("Heure départ : " + element.heure_depart, startX + 5, startY + 45);
+        pdf.text("Heure d'arrivé : .......", startX + 5, startY + 50);
 
-      // Informations client
-      pdf.setFontSize(10);
-      pdf.setFont("helvetica", "normal");
-      pdf.text("CLIENT: " + element.client_nom + " " + element.client_prenom, startX + 5, startY + 35);
-      pdf.text("Adresse Chantier : " + (element.adresseLivraison || element.chantier_adresse || "Non spécifiée"), startX + 5, startY + 40);
-      pdf.text("Heure départ : " + element.heure_depart, startX + 5, startY + 45);
-      pdf.text("Heure d'arrivé : .......", startX + 5, startY + 50);
+        // Tableau des données
+        autoTable(pdf, {
+          startY: startY + 55,
+          margin: { left: startX + 5, right: 5 },
+          tableWidth: bonWidth - 10,
+          head: [["Libelle", "Valeur"]],
+          body: [
+            ["Date de commande", element.date_production],
+            ["Date de production", element.date_production],
+            ["Formulation", element.formule_nom],
+            ["Quantité Commandée", `${element.quantite_commandee} m³`],
+            ["Quantité chargée", `${element.quantite_chargee} m³`],
+            ["Quantité totale chargée", `${element.quantite_total_livree} m³`],
+            ["Quantité restante", `${element.quantite_restante} m³`],
+            ["Chauffeur", `${element.chauffeur_nom} ${element.chauffeur_prenom} `],
+            ["Plaque Camion", `${element.plaque_immatriculation}`],
+          ],
+          theme: "grid",
+          styles: {
+            fontSize: 10,
+            cellPadding: 2,
+            minCellHeight: 5
+          },
+          headStyles: {
+            fillColor: [41, 128, 185],
+            textColor: 255,
+            halign: "center",
+            fontSize: 9
+          },
+          bodyStyles: {
+            halign: "left",
+          },
+          alternateRowStyles: {
+            fillColor: [245, 245, 245],
+          },
+        });
 
-      // Tableau des données
-      autoTable(pdf, {
-        startY: startY + 55,
-        margin: { left: startX + 5, right: 5 },
-        tableWidth: bonWidth - 10,
-        head: [["Libelle", "Valeur"]],
-        body: [
-          ["Date de commande", element.date_production],
-          ["Date de production", element.date_production],
-          ["Formulation", element.formule_nom],
-          ["Quantité Commandée", `${element.quantite_commandee} m³`],
-          ["Quantité chargée", `${element.quantite_chargee} m³`],
-          ["Quantité total chargée", `${element.quantite_total_livree} m³`],
-          ["Quantité restante", `${element.quantite_commandee - element.quantite_chargee} m³`],
-          ["Chauffeur", `${element.chauffeur_prenom} ${element.chauffeur_nom}`],
-          ["Plaque Camion", `${element.plaque_immatriculation}`],
-        ],
-        theme: "grid",
-        styles: {
-          fontSize: 8, // Taille réduite pour s'adapter
-          cellPadding: 2,
-          minCellHeight: 5
-        },
-        headStyles: {
-          fillColor: [41, 128, 185],
-          textColor: 255,
-          halign: "center",
-          fontSize: 9
-        },
-        bodyStyles: {
-          halign: "left",
-        },
-        alternateRowStyles: {
-          fillColor: [245, 245, 245],
-        },
-      });
+        // Signatures et cachet
+        const finalY = pdf.lastAutoTable.finalY + 10;
+        pdf.setFontSize(10);
 
-      // Signatures
-      const finalY = pdf.lastAutoTable.finalY + 10;
-      pdf.setFontSize(9);
+        // Cachet opérateur en bas à droite
+        const cachetWidth = 25;
+        const cachetHeight = 25;
+        pdf.addImage(cachetImg, 'PNG', startX + bonWidth - cachetWidth - 5, finalY - 5, cachetWidth, cachetHeight);
 
-      // Client
-      pdf.text("Client :", startX + 5, finalY);
-      pdf.line(startX + 15, finalY, startX + 40, finalY);
+        // Signatures
+        pdf.text("Client :", startX + 5, finalY);
+        pdf.line(startX + 15, finalY, startX + 40, finalY);
 
-      // Chauffeur
-      pdf.text("Chauffeur :", startX + 50, finalY);
-      pdf.line(startX + 65, finalY, startX + 95, finalY);
-      pdf.text("Operateur :", startX + 100, finalY);
-      // Pied de page
-      pdf.setFontSize(8);
-      pdf.text("Merci pour votre confiance.", startX + 5, finalY + 15);
-      pdf.text("DC BETON - Tous droits réservés.", startX + 5, finalY + 20);
+        pdf.text("Chauffeur :", startX + 50, finalY);
+        pdf.line(startX + 70, finalY, startX + 90, finalY);
+
+        pdf.text("Operateur :", startX + 100, finalY);
+       // pdf.line(startX + 120, finalY, startX + bonWidth - cachetWidth - 10, finalY);
+
+        // Pied de page complet centré
+        const piedPageY = pageHeight - 15;
+
+        pdf.setFontSize(7);
+        pdf.setTextColor(100);
+
+        // Première ligne : Adresse
+        const adresse = "Adresse: 12, rue Calmette Dakar Plateau";
+        const adresseWidth = pdf.getTextWidth(adresse);
+        pdf.text(adresse, startX + (bonWidth - adresseWidth) / 2, piedPageY);
+
+        // Deuxième ligne : Téléphone et NINEA
+        const ligne2 = "Tél: 77 753 36 45    N.I.N.E.A : 010626333 2A2";
+        const ligne2Width = pdf.getTextWidth(ligne2);
+        pdf.text(ligne2, startX + (bonWidth - ligne2Width) / 2, piedPageY + 4);
+
+        // Troisième ligne : RCCM
+        const ligne3 = "R.C.C.M: SN DKR 2023 B 39905";
+        const ligne3Width = pdf.getTextWidth(ligne3);
+        pdf.text(ligne3, startX + (bonWidth - ligne3Width) / 2, piedPageY + 8);
+
+        // Message de confiance au-dessus du pied de page
+        pdf.setFontSize(8);
+        pdf.setTextColor(0);
+        pdf.text("Merci pour votre confiance.", startX + 5, piedPageY - 10);
+      };
+
+      // Générer le premier bon (à gauche)
+      genererBon(10, 10);
+
+      // Générer le deuxième bon (à droite)
+      genererBon(centerX + 5, 10);
+
+      // Ligne de séparation entre les deux bons
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(centerX, 10, centerX, pageHeight - 10);
+
+      // Activer l'impression directe
+      pdf.autoPrint();
+      const pdfBlob = pdf.output('bloburl');
+      window.open(pdfBlob);
     };
 
-    // Générer le premier bon (à gauche)
-    genererBon(10, 10);
-
-    // Générer le deuxième bon (à droite)
-    genererBon(centerX + 5, 10);
-
-    // Ligne de séparation entre les deux bons
-    pdf.setDrawColor(200, 200, 200);
-    pdf.line(centerX, 10, centerX, pageHeight - 10);
-
-    // Activer l'impression directe
-    pdf.autoPrint();
-    const pdfBlob = pdf.output('bloburl');
-    window.open(pdfBlob);
+    cachetImg.onerror = () => {
+      console.error("Erreur lors du chargement du cachet.");
+      // Générer sans cachet si l'image n'est pas trouvée
+      genererSansCachet();
+    };
   };
 
   img.onerror = () => {
     console.error("Erreur lors du chargement de l'image.");
+  };
+
+  // Fonction de secours sans cachet
+  const genererSansCachet = () => {
+    const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
+    const bonWidth = (pageWidth - 30) / 2;
+    const centerX = pageWidth / 2;
+
+    const genererBon = (startX: number, startY: number) => {
+      // ... (même code que précédemment, sans la partie cachet)
+
+      // Signatures sans cachet
+      const finalY = pdf.lastAutoTable.finalY + 10;
+      pdf.setFontSize(9);
+
+      pdf.text("Client :", startX + 5, finalY);
+      pdf.line(startX + 15, finalY, startX + 40, finalY);
+
+      pdf.text("Chauffeur :", startX + 50, finalY);
+      pdf.line(startX + 65, finalY, startX + 95, finalY);
+
+      pdf.text("Operateur :", startX + 100, finalY);
+      //pdf.line(startX + 120, finalY, startX + bonWidth - 5, finalY);
+
+      // Pied de page (même code)
+      const piedPageY = pageHeight - 15;
+      pdf.setFontSize(7);
+      pdf.setTextColor(100);
+
+      const adresse = "Adresse: 12, rue Calmette Dakar Plateau";
+      const adresseWidth = pdf.getTextWidth(adresse);
+      pdf.text(adresse, startX + (bonWidth - adresseWidth) / 2, piedPageY);
+
+      const ligne2 = "Tél: 77 753 36 45    N.I.N.E.A : 010626333 2A2";
+      const ligne2Width = pdf.getTextWidth(ligne2);
+      pdf.text(ligne2, startX + (bonWidth - ligne2Width) / 2, piedPageY + 4);
+
+      const ligne3 = "R.C.C.M: SN DKR 2023 B 39905";
+      const ligne3Width = pdf.getTextWidth(ligne3);
+      pdf.text(ligne3, startX + (bonWidth - ligne3Width) / 2, piedPageY + 8);
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(0);
+      pdf.text("Merci pour votre confiance.", startX + 5, piedPageY - 10);
+    };
+
+    genererBon(10, 10);
+    genererBon(centerX + 5, 10);
+
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(centerX, 10, centerX, pageHeight - 10);
+
+    pdf.autoPrint();
+    const pdfBlob = pdf.output('bloburl');
+    window.open(pdfBlob);
   };
 }
 
