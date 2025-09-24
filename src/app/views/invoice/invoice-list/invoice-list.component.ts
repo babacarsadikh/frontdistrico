@@ -88,35 +88,60 @@ onClientChange() {
     this.chantierSelectione = null; // reset chantier sélectionné
   });
 }
-    updateCommande(modal: any) {
-      if (!this.selectedCommande || !this.ajoutQuantite || this.ajoutQuantite <= 0) {
-        return; // sécurité
+ calculateNewQuantite(): number {
+    const quantiteActuelle = parseFloat(this.selectedCommande?.quantite_commandee) || 0;
+    const ajout = parseFloat(this.ajoutQuantite.toString()) || 0;
+    return Math.round((quantiteActuelle + ajout) * 100) / 100; // Arrondi à 2 décimales
+  }
+  updateCommande(modal: any) {
+  if (!this.selectedCommande || !this.ajoutQuantite || this.ajoutQuantite <= 0) {
+    return; // sécurité
+  }
+
+  // Conversion précise avec gestion des décimales
+  const ancienneQuantite = parseFloat(this.selectedCommande.quantite_commandee) || 0;
+  const ajout = parseFloat(this.ajoutQuantite.toString()) || 0;
+
+  // Calcul avec arrondi à 2 décimales pour éviter les erreurs floating point
+  const nouvelleQuantite = Math.round((ancienneQuantite + ajout) * 100) / 100;
+
+  // Formatage de la date de production
+  let dateProduction = this.selectedCommande.date_production;
+  if (dateProduction && typeof dateProduction === 'string') {
+    dateProduction = dateProduction.split('T')[0]; // '2025-05-09T00:00:00.000Z' → '2025-05-09'
+  }
+
+  const updatedCommande = {
+    quantite_commandee: nouvelleQuantite,
+    date_production: dateProduction,
+    // Inclure les champs nécessaires pour éviter les erreurs de validation côté serveur
+    ajout_quantite: ajout // Important : envoyer l'ajout pour que le backend le traite correctement
+  };
+
+  this.dl.updateCommande(this.selectedCommande.id, updatedCommande)
+    .subscribe({
+      next: (res) => {
+        // Mettre à jour l'affichage local
+        this.selectedCommande.quantite_commandee = nouvelleQuantite;
+
+        // Recharger les données depuis le serveur
+        this.loadCommandes();
+
+        // Réinitialiser et fermer
+        this.ajoutQuantite = 0;
+        modal.close();
+
+        // Message de confirmation
+        console.log('Quantité mise à jour avec succès:', res);
+      },
+      error: (err) => {
+        console.error("Erreur lors de la mise à jour :", err);
+
+        // Message d'erreur utilisateur
+        alert('Erreur lors de la mise à jour: ' + (err.error?.error || err.message));
       }
-      const ancienneQuantite = parseFloat(this.selectedCommande.quantite_commandee);
-      const ajout = parseFloat(this.ajoutQuantite.toString());
-
-      const nouvelleQuantite = ancienneQuantite + ajout;
-      const dateProduction = this.selectedCommande.date_production?.split('T')[0]; // '2025-05-09T00:00:00.000Z' → '2025-05-09'
-
-      const updatedCommande = {
-        id_client: this.selectedCommande.id_client,
-        formule: this.selectedCommande.formule,
-        quantite_commandee: nouvelleQuantite,
-        date_production: dateProduction
-      };
-
-      this.dl.updateCommande(this.selectedCommande.id_commande, updatedCommande)
-        .subscribe({
-          next: (res) => {
-            this.selectedCommande.quantite_commandee = nouvelleQuantite;
-            this.loadCommandes();
-            modal.close();
-          },
-          error: (err) => {
-            console.error("Erreur lors de la mise à jour :", err);
-          }
-        });
-    }
+    });
+}
    onChauffeurChange() {
   if (this.chauffeurSelectionne) {
     this.plaqueCamion = this.chauffeurSelectionne.plaque_immatriculation;

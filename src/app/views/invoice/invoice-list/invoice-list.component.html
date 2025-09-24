@@ -223,13 +223,27 @@
   </div>
   <div class="modal-body">
     <p>Quantité actuelle : {{ selectedCommande?.quantite_commandee }}</p>
-    <input type="number" class="form-control" [(ngModel)]="ajoutQuantite" placeholder="Quantité à ajouter">
+    <div class="mb-3">
+      <label for="ajoutQuantite" class="form-label">Quantité à ajouter</label>
+      <input type="number"
+             class="form-control"
+             id="ajoutQuantite"
+             [(ngModel)]="ajoutQuantite"
+             placeholder="Quantité à ajouter"
+             min="1"
+             required>
+       nouvelle quantité  : {{ calculateNewQuantite() | number:'1.2-2' }}
+    </div>
   </div>
   <div class="modal-footer">
     <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
-    <button type="button" class="btn btn-primary" (click)="updateCommande(modal)">Mettre à jour</button>
+    <button type="button"
+            class="btn btn-primary"
+            (click)="updateCommande(modal)"
+            [disabled]="!ajoutQuantite || ajoutQuantite <= 0">
+      Mettre à jour
+    </button>
   </div>
 </ng-template>
-
 
 
