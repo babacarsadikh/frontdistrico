@@ -27,8 +27,8 @@ export class DataLayerService {
     private _total$ = new BehaviorSubject<number>(0);
 
 
-  private apiUrl = 'https://api.districobon.com';
-    //private apiUrl = 'http://localhost:8080';
+private apiUrl = 'https://api.districobon.com';
+//    private apiUrl = 'http://localhost:8080';
 
     constructor(private http: HttpClient) { }
 
@@ -80,6 +80,9 @@ getLivraisonPlageDate(date_debut: string, date_fin: string): Observable<any[]> {
     }
   supprimerCommande(idCommande: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/commandes/${idCommande}`);
+  }
+   supprimerClient(idClient: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/clients/${idClient}`);
   }
   updateCommande(idCommande: number, data: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/commandes/${idCommande}`, data);

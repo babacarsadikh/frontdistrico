@@ -20,6 +20,7 @@ export class ListclientComponent  implements OnInit {
   selectedClient: any;
 @ViewChild('newClientModal') newClientModal: any;
 @ViewChild('addAddressModal') addAddressModal: any;
+@ViewChild('deleteConfirmModal') deleteConfirmModal: any;
 
 client ;
 clientdetails;
@@ -59,15 +60,17 @@ openAddAddressModal(client: any) {
   this.selectedClient = client;
   this.loadClientschantier(client.id)
   this.modalService.open(this.addAddressModal, { centered: true });
-
-
+}
+openConfirmModal (client: any){
+   this.selectedClient = client;
+   this.modalService.open(this.deleteConfirmModal, { centered: true });
 }
 openNewClientModal() {
     this.modalService.open(this.newClientModal, { centered: true });
   }
 loadClients() {
   this.dl.getClients().subscribe(res => {
-    console.log(res);
+   // console.log(res);
     this.client = res;
   });
 }
@@ -100,8 +103,28 @@ addChantier(clientId: number) {
   });
 }
 
-deleteChauffeur(){
+deleteClient(id: number) {
+  this.dl.supprimerClient(id).subscribe(
+    (res) => {
+      console.log(res);
+      this.loadClients();
+      this.modalService.dismissAll();
+      this.toastr.success('Client supprimé avec succès', 'Succès');
+    },
+    (err) => {
+      this.modalService.dismissAll();
+      console.error('Erreur lors de la suppression:', err);
 
+      if (err.status === 400 || err.status === 409) {
+        const errorMessage = err.error?.error || 'Impossible de supprimer ce client car il a des commandes associées';
+        this.toastr.error(errorMessage, 'Erreur');
+      } else if (err.status === 404) {
+        this.toastr.error('Client non trouvé', 'Erreur');
+      } else {
+        this.toastr.error('Erreur lors de la suppression du client', 'Erreur');
+      }
+    }
+  );
 }
 createClient() {
   if (this.newClientForm.valid) {
