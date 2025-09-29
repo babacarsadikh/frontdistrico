@@ -15,6 +15,7 @@
                 <th scope="col">Nom Client</th>
                 <th scope="col">Adresse</th>
                 <th scope="col">Quantité Chargée</th>
+                <th scope="col">Chauffeur</th>
                 <th scope="col">Formule</th>
                 <th scope="col">Date de Production</th>
                 <th scope="col">Actions</th>
@@ -23,13 +24,16 @@
             <tbody>
               <tr *ngFor="let com of commandes | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index">
                 <td>{{ com.client_nom }}</td>
-                <td>{{ com.chantier_adresse }}</td>
+                <td>{{ com.adresse_livraison_saisie }}</td>
                 <td>{{ com.quantite_chargee }}</td>
+                <td>{{ com.chauffeur_nom }} {{ com.chauffeur_prenom }} </td>
                 <td>{{ com.formule_nom }}</td>
-                <td>{{ com.date_production }}</td>
+                <td>{{ com.heure_depart }}</td>
+
                 <td>
                   <button class="btn btn-sm btn-outline-secondary me-2" (click)="print(com)">
-                    <i class="i-Receipt"></i>
+                    <i class="i-Receipt-3"></i>
+
                   </button>
                   <button class="btn btn-sm btn-outline-danger" (click)="deleteInvoice(com.id, deleteConfirmModal)">
                     <i class="i-Remove-Basket"></i>

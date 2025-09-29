@@ -82,65 +82,75 @@ export class LivraisonlistComponent implements OnInit {
         }
       }
 
-    print(element: any) {
-      console.log('Données à imprimer > ', element);
+print(element: any) {
+  console.log('Données à imprimer > ', element);
 
-      // Créer une instance jsPDF
-      const pdf = new jsPDF();
+  // Créer une instance jsPDF en orientation paysage pour A4
+  const pdf = new jsPDF('l', 'mm', 'a4');
 
-      // Convertir l'image en Base64 et l'ajouter
-      const img = new Image();
-      img.src = 'assets/images/logobeton.png'; // Chemin relatif vers l'image
-      img.onload = () => {
-        // Ajouter le logo en haut au centre
-        const pageWidth = pdf.internal.pageSize.width; // Largeur de la page
-        const logoWidth = 70; // Largeur du logo
-        const logoHeight = 40; // Hauteur du logo
-        const logoX = (pageWidth - logoWidth) / 2; // Centrer horizontalement
-        pdf.addImage(img, 'PNG', logoX, 10, logoWidth, logoHeight);
+  // Convertir l'image en Base64 et l'ajouter
+  const img = new Image();
+  img.src = 'assets/images/logobeton.png';
 
-        // Ajouter un en-tête
-        pdf.setFontSize(18);
+  // Image du cachet opérateur
+  const cachetImg = new Image();
+  cachetImg.src = 'assets/images/cachet.png'; // Assurez-vous d'avoir cette image
+
+  img.onload = () => {
+    cachetImg.onload = () => {
+      const pageWidth = pdf.internal.pageSize.width;
+      const pageHeight = pdf.internal.pageSize.height;
+      const bonWidth = (pageWidth - 30) / 2;
+      const centerX = pageWidth / 2;
+
+      // Fonction pour générer un bon de livraison
+      const genererBon = (startX: number, startY: number) => {
+        // Ajouter le logo
+        const logoWidth = 35;
+        const logoHeight = 20;
+        pdf.addImage(img, 'PNG', startX + 1, startY, logoWidth, logoHeight);
+
+        // Titre
+        pdf.setFontSize(15);
         pdf.setFont("helvetica", "bold");
-        pdf.text("BON DE LIVRAISON", pageWidth / 2, 50, { align: "center" });
-// Obtenir l'heure actuelle
-        const now = new Date();
-        const heureDepart = now.toLocaleTimeString();
-        pdf.setFontSize(14);
-        pdf.setFont("helvetica", "normal");
-        pdf.text("CLIENT: " + element.nom_client, 10, 60);
-        pdf.text("Adresse Chantier : " + element.adresse, 10, 65);
-        pdf.text("Heure départ : " + heureDepart, 10, 70);
-       // pdf.text("Heure depart : ", 10, 70);
+        pdf.text("BON DE LIVRAISON", startX + bonWidth / 2, startY + 25, { align: "center" });
 
-        // Ligne séparatrice
-        pdf.line(10, 75, 200, 75);
+        // Informations client
+        pdf.setFontSize(12);
+        pdf.setFont("helvetica", "normal");
+        pdf.text("CLIENT: " + element.client_nom + " " + element.client_prenom, startX + 5, startY + 35);
+        pdf.text("Adresse Chantier : " + (element.adresse_livraison_saisie || "Non spécifiée"), startX + 5, startY + 40);
+        pdf.text("Heure départ : " + element.heure_depart, startX + 5, startY + 45);
+        pdf.text("Heure d'arrivé : .......", startX + 5, startY + 50);
 
         // Tableau des données
         autoTable(pdf, {
-          startY: 80,
-          head: [["Libelle", "Valeur"]], // Entêtes des colonnes
+          startY: startY + 55,
+          margin: { left: startX + 5, right: 5 },
+          tableWidth: bonWidth - 10,
+          head: [["Libelle", "Valeur"]],
           body: [
             ["Date de commande", element.date_production],
             ["Date de production", element.date_production],
-            ["Formulation", element.formule],
+            ["Formulation", element.formule_nom],
             ["Quantité Commandée", `${element.quantite_commandee} m³`],
             ["Quantité chargée", `${element.quantite_chargee} m³`],
-            ["Quantité total chargée", `${element.quantite_totale_chargee} m³`],
-
+            ["Quantité totale chargée", `${element.quantite_total_livree} m³`],
             ["Quantité restante", `${element.quantite_restante} m³`],
-            ["Chauffeur", `${element.nom_chauffeur} `],
-            ["Plaque Camion", `${element.plaque_camion} `],
+            ["Chauffeur", `${element.chauffeur_nom} ${element.chauffeur_prenom} `],
+            ["Plaque Camion", `${element.plaque_immatriculation}`],
           ],
           theme: "grid",
           styles: {
-            fontSize: 11,
-            cellPadding: 3,
+            fontSize: 10,
+            cellPadding: 2,
+            minCellHeight: 5
           },
           headStyles: {
             fillColor: [41, 128, 185],
             textColor: 255,
             halign: "center",
+            fontSize: 9
           },
           bodyStyles: {
             halign: "left",
@@ -150,36 +160,135 @@ export class LivraisonlistComponent implements OnInit {
           },
         });
 
-        // Ajouter un espace pour la signature du client
-        const finalY = pdf.lastAutoTable.finalY + 20; // Position après le tableau
-        pdf.setFontSize(12);
-        pdf.text("Client :", 10, finalY);
-        pdf.line(30, finalY, 50, finalY); // Ligne horizontale
-
-        // Texte "Chauffeur" avec une ligne après
-        pdf.text("Chauffeur :", 75, finalY);
-        pdf.line(100, finalY, 140, finalY); // Ligne horizontale
-
-        // Texte "Opérateur" avec une ligne après
-        pdf.text("Opérateur :", 145, finalY);
-        pdf.line(175, finalY, 200, finalY);
-
-        // Ajouter un pied de page
-        const pageHeight = pdf.internal.pageSize.height;
+        // Signatures et cachet
+        const finalY = pdf.lastAutoTable.finalY + 10;
         pdf.setFontSize(10);
-        pdf.text("Merci pour votre confiance.", 10, pageHeight - 20);
-        pdf.text("DC BETON - Tous droits réservés.", 10, pageHeight - 10);
 
-        // Activer l'impression directe
-        pdf.autoPrint(); // Activer le mode d'impression
-        const pdfBlob = pdf.output('bloburl'); // Obtenir un URL blob
-         window.open(pdfBlob); // Lancer directement la fenêtre d'impression
+        // Cachet opérateur en bas à droite
+        const cachetWidth = 25;
+        const cachetHeight = 25;
+        pdf.addImage(cachetImg, 'PNG', startX + bonWidth - cachetWidth - 5, finalY - 5, cachetWidth, cachetHeight);
+
+        // Signatures
+        pdf.text("Client :", startX + 5, finalY);
+        pdf.line(startX + 15, finalY, startX + 40, finalY);
+
+        pdf.text("Chauffeur :", startX + 50, finalY);
+        pdf.line(startX + 70, finalY, startX + 90, finalY);
+
+        pdf.text("Operateur :", startX + 100, finalY);
+       // pdf.line(startX + 120, finalY, startX + bonWidth - cachetWidth - 10, finalY);
+
+        // Pied de page complet centré
+        const piedPageY = pageHeight - 15;
+
+        pdf.setFontSize(7);
+        pdf.setTextColor(100);
+
+        // Première ligne : Adresse
+        const adresse = "Adresse: 12, rue Calmette Dakar Plateau";
+        const adresseWidth = pdf.getTextWidth(adresse);
+        pdf.text(adresse, startX + (bonWidth - adresseWidth) / 2, piedPageY);
+
+        // Deuxième ligne : Téléphone et NINEA
+        const ligne2 = "Tél: 77 753 36 45    N.I.N.E.A : 010626333 2A2";
+        const ligne2Width = pdf.getTextWidth(ligne2);
+        pdf.text(ligne2, startX + (bonWidth - ligne2Width) / 2, piedPageY + 4);
+
+        // Troisième ligne : RCCM
+        const ligne3 = "R.C.C.M: SN DKR 2023 B 39905";
+        const ligne3Width = pdf.getTextWidth(ligne3);
+        pdf.text(ligne3, startX + (bonWidth - ligne3Width) / 2, piedPageY + 8);
+
+        // Message de confiance au-dessus du pied de page
+        pdf.setFontSize(8);
+        pdf.setTextColor(0);
+        pdf.text("Merci pour votre confiance.", startX + 5, piedPageY - 10);
       };
 
-      img.onerror = () => {
-        console.error("Erreur lors du chargement de l'image.");
-      };
-    }
+      // Générer le premier bon (à gauche)
+      genererBon(10, 10);
+
+      // Générer le deuxième bon (à droite)
+      genererBon(centerX + 5, 10);
+
+      // Ligne de séparation entre les deux bons
+      pdf.setDrawColor(200, 200, 200);
+      pdf.line(centerX, 10, centerX, pageHeight - 10);
+
+      // Activer l'impression directe
+      pdf.autoPrint();
+      const pdfBlob = pdf.output('bloburl');
+      window.open(pdfBlob);
+    };
+
+    cachetImg.onerror = () => {
+      console.error("Erreur lors du chargement du cachet.");
+      // Générer sans cachet si l'image n'est pas trouvée
+      genererSansCachet();
+    };
+  };
+
+  img.onerror = () => {
+    console.error("Erreur lors du chargement de l'image.");
+  };
+
+  // Fonction de secours sans cachet
+  const genererSansCachet = () => {
+    const pageWidth = pdf.internal.pageSize.width;
+    const pageHeight = pdf.internal.pageSize.height;
+    const bonWidth = (pageWidth - 30) / 2;
+    const centerX = pageWidth / 2;
+
+    const genererBon = (startX: number, startY: number) => {
+      // ... (même code que précédemment, sans la partie cachet)
+
+      // Signatures sans cachet
+      const finalY = pdf.lastAutoTable.finalY + 10;
+      pdf.setFontSize(9);
+
+      pdf.text("Client :", startX + 5, finalY);
+      pdf.line(startX + 15, finalY, startX + 40, finalY);
+
+      pdf.text("Chauffeur :", startX + 50, finalY);
+      pdf.line(startX + 65, finalY, startX + 95, finalY);
+
+      pdf.text("Operateur :", startX + 100, finalY);
+      //pdf.line(startX + 120, finalY, startX + bonWidth - 5, finalY);
+
+      // Pied de page (même code)
+      const piedPageY = pageHeight - 15;
+      pdf.setFontSize(7);
+      pdf.setTextColor(100);
+
+      const adresse = "Adresse: 12, rue Calmette Dakar Plateau";
+      const adresseWidth = pdf.getTextWidth(adresse);
+      pdf.text(adresse, startX + (bonWidth - adresseWidth) / 2, piedPageY);
+
+      const ligne2 = "Tél: 77 753 36 45    N.I.N.E.A : 010626333 2A2";
+      const ligne2Width = pdf.getTextWidth(ligne2);
+      pdf.text(ligne2, startX + (bonWidth - ligne2Width) / 2, piedPageY + 4);
+
+      const ligne3 = "R.C.C.M: SN DKR 2023 B 39905";
+      const ligne3Width = pdf.getTextWidth(ligne3);
+      pdf.text(ligne3, startX + (bonWidth - ligne3Width) / 2, piedPageY + 8);
+
+      pdf.setFontSize(8);
+      pdf.setTextColor(0);
+      pdf.text("Merci pour votre confiance.", startX + 5, piedPageY - 10);
+    };
+
+    genererBon(10, 10);
+    genererBon(centerX + 5, 10);
+
+    pdf.setDrawColor(200, 200, 200);
+    pdf.line(centerX, 10, centerX, pageHeight - 10);
+
+    pdf.autoPrint();
+    const pdfBlob = pdf.output('bloburl');
+    window.open(pdfBlob);
+  };
+}
 
 
 loadInvoices() {

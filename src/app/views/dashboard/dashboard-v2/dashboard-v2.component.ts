@@ -256,7 +256,6 @@ print(data: any) {
     pdf.setFont("helvetica", "normal");
     const clientName = `${data.client.nom} ${data.client.prenom}`.trim();
     pdf.text(`Client: ${clientName}`, 14, 72);
-    pdf.text(`ID Client: ${data.client.id}`, 14, 78);
 
     // Date du rapport
     const now = new Date();
@@ -301,7 +300,6 @@ print(data: any) {
       pdf.setFont("helvetica", "normal");
 
       pdf.text(`Date commande: ${formatDate(commande.date_commande)}`, 14, startY + 7);
-      pdf.text(`Chantier: ${commande.nom_chantier}`, 14, startY + 14);
       pdf.text(`Formule béton: ${commande.formule_beton}`, 14, startY + 21);
       pdf.text(`Statut: ${commande.statut}`, 14, startY + 28);
 
@@ -324,6 +322,7 @@ print(data: any) {
           (livIndex + 1).toString(),
           livraison.reference,
           formatDate(livraison.date_production),
+          livraison.adresse_livraison,
           `${formatNumber(livraison.quantite_chargee)} ${UNIT}`,
           livraison.statut,
           livraison.chauffeur_nom ? `${livraison.chauffeur_nom} ${livraison.chauffeur_prenom}`.trim() : 'N/A',
@@ -332,7 +331,7 @@ print(data: any) {
 
         autoTable(pdf, {
           startY: startY,
-          head: [["#", "Référence", "Date", "Quantité", "Statut", "Chauffeur", "Camion"]],
+          head: [["#", "Référence", "Date", "Adresse", "Quantité", "Statut", "Chauffeur", "Camion"]],
           body: livraisonsData,
           theme: "grid",
           styles: {
@@ -351,11 +350,12 @@ print(data: any) {
           columnStyles: {
             0: { cellWidth: 8, halign: 'center' },   // #
             1: { cellWidth: 25 },                    // Référence
-            2: { cellWidth: 20 },                    // Date
-            3: { cellWidth: 18, halign: 'right' },   // Quantité
-            4: { cellWidth: 15, halign: 'center' },  // Statut
-            5: { cellWidth: 25 },                    // Chauffeur
-            6: { cellWidth: 20 }                     // Camion
+            2: { cellWidth: 20 },                     //adresse
+            3: { cellWidth: 20 },                   // Date
+            4: { cellWidth: 18, halign: 'right' },   // Quantité
+            5: { cellWidth: 15, halign: 'center' },  // Statut
+            6: { cellWidth: 25 },                    // Chauffeur
+            7: { cellWidth: 20 }                     // Camion
           },
           margin: { left: 14, right: 14 },
           tableWidth: 'auto'

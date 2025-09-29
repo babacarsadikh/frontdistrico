@@ -235,7 +235,8 @@ loadformules() {
     date_production: new Date().toISOString().split('T')[0],
     heure_depart: new Date().toISOString().slice(0, 19).replace('T', ' '), // format SQL
     statut: 'livre',
-    notes: this.adresseLivraison
+    notes: this.adresseLivraison,
+    adresse_livraison_saisie: this.adresseLivraison
   };
 
   console.log("📦 Données envoyées à l'API :", livraisonData);
@@ -316,7 +317,7 @@ print(element: any) {
         pdf.setFontSize(12);
         pdf.setFont("helvetica", "normal");
         pdf.text("CLIENT: " + element.client_nom + " " + element.client_prenom, startX + 5, startY + 35);
-        pdf.text("Adresse Chantier : " + (element.adresseLivraison || element.chantier_adresse || "Non spécifiée"), startX + 5, startY + 40);
+        pdf.text("Adresse Chantier : " + (element.adresse_livraison_saisie || "Non spécifiée"), startX + 5, startY + 40);
         pdf.text("Heure départ : " + element.heure_depart, startX + 5, startY + 45);
         pdf.text("Heure d'arrivé : .......", startX + 5, startY + 50);
 
