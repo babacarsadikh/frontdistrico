@@ -28,14 +28,19 @@ export class DataLayerService {
 
 
 private apiUrl = 'https://api.districobon.com';
-//    private apiUrl = 'http://localhost:8080';
+   // private apiUrl = 'http://localhost:8080';
 
     constructor(private http: HttpClient) { }
 
     getInvoices() : Observable<any[]>{
         return this.http.get<any[]>(`${this.apiUrl}/rapports`);
     }
-
+ getOperateur() : Observable<any[]>{
+        return this.http.get<any[]>(`${this.apiUrl}/auth/operateurs`);
+    }
+     getOperateurById(id) : Observable<any[]>{
+        return this.http.get<any[]>(`${this.apiUrl}/auth/operateurs/${id}`);
+    }
     getLivraison () :Observable<any[]>{
       return this.http.get<any[]>(`${this.apiUrl}/livraisons`);
    }

@@ -17,8 +17,10 @@
                 <th scope="col">Quantité Chargée</th>
                 <th scope="col">Chauffeur</th>
                 <th scope="col">Formule</th>
-                <th scope="col">Date de Production</th>
+                <th scope="col">Date Production</th>
+                <th scope="col">Operateur</th>
                 <th scope="col">Actions</th>
+
               </tr>
             </thead>
             <tbody>
@@ -29,7 +31,7 @@
                 <td>{{ com.chauffeur_nom }} {{ com.chauffeur_prenom }} </td>
                 <td>{{ com.formule_nom }}</td>
                 <td>{{ com.heure_depart }}</td>
-
+                <td>{{ com.operateur_nom }}</td>
                 <td>
                   <button class="btn btn-sm btn-outline-secondary me-2" (click)="print(com)">
                     <i class="i-Receipt-3"></i>

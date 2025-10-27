@@ -34,7 +34,7 @@
     "angular-in-memory-web-api": "0.18.0",
     "apexcharts": "^4.4.0",
     "bootstrap": "5.3.2",
-    "chart.js": "^4.4.7",
+    "chart.js": "^4.5.1",
     "core-js": "3.6.4",
     "date-fns": "2.10.0",
     "echarts": "^5.4.0",

@@ -36,12 +36,12 @@ export class AuthService {
       headers: { 'Content-Type': 'application/json' }
     }).pipe(
       tap((response: any) => {
-        if (response.success === true) {
-          // Stocker le token ET les infos utilisateur
-          this.store.setItem("token", response.token);
-          this.store.setItem("user", response.user);
-          this.router.navigate(["/dashboard/v2"]);
-        } else {
+      if (response.success === true) {
+  this.store.setItem("token", response.token);
+  this.store.setItem("user",(response.user));
+  this.router.navigate(["/dashboard/v2"]);
+}
+else {
           console.error("Connexion refusée :", response.message);
         }
       }),

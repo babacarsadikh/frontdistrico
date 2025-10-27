@@ -21,19 +21,15 @@
             <th scope="col">NOM OPÉRATEUR</th>
             <th scope="col">EMAIL</th>
             <th scope="col">TÉLÉPHONE</th>
-            <th scope="col">STATUT</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let operateur of operateurs">
-            <td>{{ operateur.nomoperateur }}</td>
-            <td>{{ operateur.adresse_email }}</td>
+            <td>{{ operateur.nom   }} {{operateur.prenom }}</td>
+            <td>{{ operateur.email }}</td>
             <td>{{ operateur.telephone }}</td>
-            <td>
-              <span *ngIf="operateur.etat_connexion" class="badge bg-success">Connecté</span>
-              <span *ngIf="!operateur.etat_connexion" class="badge bg-danger">Déconnecté</span>
-            </td>
+
             <td>
               <button class="btn btn-outline-primary me-2" (click)="openEditOperateurModal(operateur, editOperateurModal); $event.stopPropagation()">
                 <i class="i-Pen-2"></i>

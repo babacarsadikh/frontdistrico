@@ -300,6 +300,22 @@ loadInvoices() {
         (a, b) => new Date(b.date_production).getTime() - new Date(a.date_production).getTime()
       );
       console.log('Livraisons chargées :', this.commandes);
+       this.commandes.forEach((livraison: BonLivraison) => {
+        if (livraison.operateur_id) {
+          this.dl.getOperateurById(livraison.operateur_id).subscribe(
+            (operateur: any) => {
+              livraison.operateur_nom = `${operateur.prenom ?? ''} ${operateur.nom ?? ''}`.trim();
+            },
+            (err) => {
+              console.error(`Erreur opérateur ${livraison.operateur_id}`, err);
+              livraison.operateur_nom = 'Inconnu';
+            }
+          );
+        } else {
+          livraison.operateur_nom = 'Non défini';
+        }
+      });
+
       // Si tu veux utiliser la pagination de l’API
       this.pagination = res.pagination;
     }, err => {

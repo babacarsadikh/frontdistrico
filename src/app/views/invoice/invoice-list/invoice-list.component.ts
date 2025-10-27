@@ -32,6 +32,7 @@ export class InvoiceListComponent implements OnInit {
    // chantiersDuClient: any[] = [];
     formuleselectione;
    // chantierSelectione: number = null;
+     operateurId = null;
 
     datecommande;
     plaqueCamion: string = '';
@@ -67,6 +68,11 @@ chantierSelectione: number | null = null;
         this.loadChauffeurs();
         this.loadformules();
         this.loadClient();
+           const userData = localStorage.getItem('user');
+  if (userData) {
+    const user = JSON.parse(userData);
+   this.operateurId = user.id;
+  } console.log(this.operateurId)
 
     }
     private _filter(value: string): any[] {
@@ -206,6 +212,7 @@ loadformules() {
     }
 
    confirmerLivraison(modal: any) {
+
   // Vérification des champs obligatoires
   if (!this.quantiteChargee || !this.chauffeurSelectionne || !this.adresseLivraison) {
     this.toastr.warning('Veuillez renseigner tous les champs.', 'Attention');
@@ -229,7 +236,7 @@ loadformules() {
     commande_id: this.commandeSelectionnee.id,
     chauffeur_id: this.chauffeurSelectionne.id,
     camion_id: this.chauffeurSelectionne.camion_id,
-    operateur_id: 1,
+    operateur_id: this.operateurId,
     formule_beton_id: this.commandeSelectionnee.formule_beton_id ?? 0,
     quantite_chargee: this.quantiteChargee,
     date_production: new Date().toISOString().split('T')[0],

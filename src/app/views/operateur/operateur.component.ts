@@ -3,6 +3,8 @@ import { HttpClient } from '@angular/common/http';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
+import { AuthService } from 'src/app/shared/services/auth.service';
+import { DataLayerService } from 'src/app/shared/services/data-layer.service';
 
 //const API_URL = 'https://api.districobon.com/operateurs';
 const API_URL = 'http://127.0.0.1:5000/api/operateurs';
@@ -15,7 +17,7 @@ const API_URL = 'http://127.0.0.1:5000/api/operateurs';
   styleUrls: ['./operateur.component.scss']
 })
 export class OperateurComponent implements OnInit {
-  operateurs: any[] = []; // Liste des opérateurs
+  operateurs; // Liste des opérateurs
   newOperateurForm: FormGroup; // Formulaire pour créer un nouvel opérateur
   editOperateurForm: FormGroup;
   selectedOperateur: any;
@@ -25,6 +27,7 @@ export class OperateurComponent implements OnInit {
     private fb: FormBuilder,
     private modalService: NgbModal,
     private toastr: ToastrService,
+     private dl: DataLayerService,
   ) {
     // Initialisation du formulaire
     this.newOperateurForm = this.fb.group({
@@ -47,10 +50,19 @@ export class OperateurComponent implements OnInit {
 
   // Charger la liste des opérateurs
   loadOperateurs() {
-    this.http.get<any[]>(API_URL).subscribe(
-      (data) => { this.operateurs = data; },
-      (error) => { console.error('Erreur lors du chargement des opérateurs', error); }
-    );
+   this.dl.getOperateur()
+     .subscribe((res: any) => {
+      console.log(res)
+      // Récupère uniquement le tableau des livraisons
+      this.operateurs = res;
+
+
+      //console.log('Livraisons chargées :', this.commandes);
+      // Si tu veux utiliser la pagination de l’API
+      //this.pagination = res.pagination;
+    }, err => {
+      console.error('Erreur lors du chargement OPERATEURS', err);
+    });
   }
 
   // Ouvrir la modale pour créer un nouvel opérateur

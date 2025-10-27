@@ -1,4 +1,6 @@
 export interface BonLivraison {
+  operateur_nom: string;
+  operateur_id: any;
   id: number;                     // Identifiant unique du bon de commande
   adresse_chantier: string;       // Adresse du chantier
   chauffeur_id: string;           // Identifiant du chauffeur

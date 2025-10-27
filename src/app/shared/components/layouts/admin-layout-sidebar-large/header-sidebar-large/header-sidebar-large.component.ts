@@ -9,6 +9,7 @@ import { AuthService } from '../../../../services/auth.service';
   styleUrls: ['./header-sidebar-large.component.scss']
 })
 export class HeaderSidebarLargeComponent implements OnInit {
+     userName: string = '';
 
     notifications: any[];
 
@@ -21,6 +22,12 @@ export class HeaderSidebarLargeComponent implements OnInit {
     }
 
     ngOnInit() {
+   const userData = localStorage.getItem('user');
+   console.log (userData)
+    if (userData) {
+      const user = JSON.parse(userData);
+      this.userName = `${user.prenom} ${user.nom}`+ " - " + `${user.role}`;
+    }
     }
 
     toggelSidebar() {
