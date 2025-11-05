@@ -63,7 +63,7 @@ userName: string = '';
       const user = JSON.parse(userData);
       this.userName = user.role ? user.role.toLowerCase() : '';
        if (this.userName !== 'admin') {
-      this.router.navigate(['/bonlivraison']);
+     // this.router.navigate(['/bonlivraison']);
     }
     }
 

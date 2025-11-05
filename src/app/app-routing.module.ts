@@ -71,7 +71,8 @@ const adminRoutes: Routes = [
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard/v2',
+   //redirectTo: 'dashboard/v2',
+    redirectTo: 'others/404',
     pathMatch: 'full'
   },
   {
@@ -84,16 +85,7 @@ const routes: Routes = [
       }
     ]
   },
-  // {
-  //   path: '',
-  //   component: BlankLayoutComponent,
-  //   children: [
-  //     {
-  //       path: 'others',
-  //       loadChildren: () => import('./views/others/others.module').then(m => m.OthersModule)
-  //     }
-  //   ]
-  // },
+
   {
     path: '',
     component: AdminLayoutSidebarLargeComponent,
