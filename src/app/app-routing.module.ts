@@ -71,8 +71,7 @@ const adminRoutes: Routes = [
 const routes: Routes = [
   {
     path: '',
-   //redirectTo: 'dashboard/v2',
-    redirectTo: 'others/404',
+   redirectTo: 'dashboard/v2',
     pathMatch: 'full'
   },
   {

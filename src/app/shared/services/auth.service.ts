@@ -39,8 +39,7 @@ export class AuthService {
       if (response.success === true) {
   this.store.setItem("token", response.token);
   this.store.setItem("user",(response.user));
-    this.router.navigate(["/others/404"]);
- // this.router.navigate(["/dashboard/v2"]);    redirectTo: 'others/404',
+  this.router.navigate(["/dashboard/v2"]);
 
 }
 else {
