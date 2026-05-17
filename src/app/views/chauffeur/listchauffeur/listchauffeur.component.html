@@ -1,0 +1,216 @@
+<div class="">
+  <div class="breadcrumb">
+      <h1>GESTION CHAUFFEURS</h1>
+      <!-- <ul>
+          <li><a href="#">Data Table</a></li>
+          <li>Bootstrap Table</li>
+      </ul> -->
+  </div>
+
+  <div class="separator-breadcrumb border-top"></div>
+  <div class="row">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <button class="btn plusbtn btn-primary float-right"  (click)="open(modalBasic)" >
+          <i class="i-Add"></i> NOUVEAU CHAUFFEUR
+        </button>
+      </div>
+    <div class="col-md-4 mb-4">
+        <button class="btn plusbtn btn-primary"  (click)="open(modalCamion)" >
+          <i class="i-Car"></i> LISTE DES CAMIONS
+        </button>
+      </div>
+    </div>
+
+    <div class="col-md-12">
+      <div class="card o-hidden">
+
+
+       <table class="table table-hover">
+  <thead>
+    <tr>
+      <th scope="col">Prénom et Nom</th>
+      <th scope="col">Téléphone</th>
+      <th scope="col">Camion</th>
+      <th scope="col">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let c of chauffeurs | paginate: { itemsPerPage: pageSize, currentPage: page }">
+      <td>{{ c.prenom }} {{ c.nom }}</td>
+      <td>{{ c.telephone }}</td>
+      <td>
+        <strong>{{ c.plaque_immatriculation }}</strong><br>
+        <small>{{ c.modele }} ({{ c.capacite }} m³)</small>
+      </td>
+      <td>
+        <button class="btn btn-outline-danger" (click)="deleteChauffeur(c.id, deleteConfirmModal)">
+          <i class="i-Remove-Basket"></i>
+        </button>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="col-md-12 mt-3 d-flex justify-content-center" *ngIf="chauffeurs?.length">
+  <pagination-controls
+    (pageChange)="page = $event"
+    previousLabel="Précédent"
+    nextLabel="Suivant">
+  </pagination-controls>
+</div>
+
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<ng-template #modalBasic let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">AJOUTER UN CHAUFFEUR</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+  <div class="modal-body">
+    <form #chauffeurForm="ngForm">
+      <!-- Nom -->
+      <div class="form-group mb-3">
+        <label for="nom">Nom</label>
+        <input
+          id="nom"
+          type="text"
+          class="form-control"
+          [(ngModel)]="chauffeur.nom"
+          name="nom"
+          placeholder="Entrez le nom"
+          required
+        />
+        <div *ngIf="chauffeurForm.submitted && !chauffeur.nom" class="text-danger">
+          Ce champ est requis.
+        </div>
+      </div>
+
+      <!-- Prénom -->
+      <div class="form-group mb-3">
+        <label for="prenom">Prénom</label>
+        <input
+          id="prenom"
+          type="text"
+          class="form-control"
+          [(ngModel)]="chauffeur.prenom"
+          name="prenom"
+          placeholder="Entrez le prénom"
+          required
+        />
+        <div *ngIf="chauffeurForm.submitted && !chauffeur.prenom" class="text-danger">
+          Ce champ est requis.
+        </div>
+      </div>
+
+      <!-- Téléphone -->
+      <div class="form-group mb-3">
+        <label for="telephone">Téléphone</label>
+        <input
+          id="telephone"
+          type="text"
+          class="form-control"
+          [(ngModel)]="chauffeur.telephone"
+          name="telephone"
+          placeholder="77xxxxxxx"
+          required
+        />
+        <div *ngIf="chauffeurForm.submitted && !chauffeur.telephone" class="text-danger">
+          Ce champ est requis.
+        </div>
+        <div *ngIf="chauffeur.telephone && chauffeurForm.submitted" class="text-danger">
+          Numéro invalide. Exemple: 77xxxxxxx
+        </div>
+      </div>
+
+      <!-- Sélection du camion -->
+      <div class="form-group mb-3">
+        <label for="camion_id">Camion</label>
+        <select
+          id="camion_id"
+          class="form-control"
+          [(ngModel)]="chauffeur.camion_id"
+          name="camion_id"
+          required
+        >
+          <option value="" disabled selected>-- Sélectionnez un camion --</option>
+          <option *ngFor="let camion of camions" [value]="camion.id">
+            {{ camion.plaque_immatriculation }} - {{ camion.modele }}
+          </option>
+        </select>
+        <div *ngIf="chauffeurForm.submitted && !chauffeur.camion_id" class="text-danger">
+          Ce champ est requis.
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-outline-dark"
+      (click)="onSaveChauffeur(modal, chauffeurForm)"
+    >
+      Enregistrer
+    </button>
+    <button
+      type="button"
+      class="btn btn-danger"
+      (click)="modal.dismiss('Cancel click')"
+    >
+      Annuler
+    </button>
+  </div>
+</ng-template>
+
+
+<ng-template #modalCamion let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Ajouter un Camion</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+  <div class="modal-body">
+    <form [formGroup]="camionForm">
+      <div class="mb-3">
+        <label for="plaque" class="form-label">Plaque d'immatriculation</label>
+        <input type="text" id="plaque" class="form-control" formControlName="plaque_immatriculation">
+      </div>
+
+      <div class="mb-3">
+        <label for="modele" class="form-label">Modèle</label>
+        <input type="text" id="modele" class="form-control" formControlName="modele">
+      </div>
+
+      <div class="mb-3">
+        <label for="capacite" class="form-label">Capacité (m³)</label>
+        <input type="number" id="capacite" class="form-control" formControlName="capacite">
+      </div>
+
+      <div class="mb-3">
+        <label for="date_mise_en_service" class="form-label">Date de mise en service</label>
+        <input type="date" id="date_mise_en_service" class="form-control" formControlName="date_mise_en_service">
+      </div>
+
+      <div class="mb-3">
+        <label for="etat" class="form-label">État</label>
+        <select id="etat" class="form-select" formControlName="etat">
+          <option value="disponible">Disponible</option>
+          <option value="indisponible">Indisponible</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+    </form>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Annuler</button>
+    <button type="button" class="btn btn-primary" (click)="ajouterCamion(); modal.close()">Ajouter</button>
+  </div>
+</ng-template>

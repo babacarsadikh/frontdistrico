@@ -1,0 +1,99 @@
+<div class="container-fluid">
+  <div class="breadcrumb d-flex justify-content-between align-items-center">
+    <h1>BON DE LIVRAISON</h1>
+
+    <!-- Barre de recherche -->
+    <div class="search-bar">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Rechercher par N° bon, client, chauffeur ou camion..."
+        [(ngModel)]="searchTerm"
+        (input)="searchBons()"
+        style="min-width: 350px;"
+      />
+    </div>
+  </div>
+
+  <div class="separator-breadcrumb border-top mb-3"></div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="card o-hidden">
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Nom Client</th>
+                <th scope="col">Adresse</th>
+                <th scope="col">Quantité Chargée</th>
+                <th scope="col">Chauffeur</th>
+                <th scope="col">Camion</th>
+                <th scope="col">Formule</th>
+                <th scope="col">Date Production</th>
+                <th scope="col">Operateur</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let com of filteredCommandes | paginate: { itemsPerPage: pageSize, currentPage: page }; let i = index">
+                <td>{{ com.client_nom }}</td>
+                <td>{{ com.adresse_livraison_saisie }}</td>
+                <td>{{ com.quantite_chargee }}</td>
+                <td>{{ com.chauffeur_nom }} {{ com.chauffeur_prenom }}</td>
+                <td>{{ com.camion_plaque }}</td>
+                <td>{{ com.formule_nom }}</td>
+                <td>{{ com.heure_depart }}</td>
+                <td>{{ com.operateur_nom }}</td>
+                <td>
+                  <button class="btn btn-sm btn-outline-secondary me-2" (click)="print(com)">
+                    <i class="i-Receipt-3"></i>
+                  </button>
+
+                  <button class="btn btn-sm btn-outline-danger" (click)="deleteInvoice(com.id, deleteConfirmModal)">
+                    <i class="i-Remove-Basket"></i>
+                  </button>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredCommandes.length === 0">
+                <td colspan="9" class="text-center text-muted">
+                  Aucun bon trouvé.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3" *ngIf="filteredCommandes?.length">
+          <pagination-controls
+            (pageChange)="page = $event"
+            previousLabel="Précédent"
+            nextLabel="Suivant">
+          </pagination-controls>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #deleteConfirmModal let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-title">Supprimer commande</h4>
+    <button type="button" class="btn-close" aria-label="Close button" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+
+  <div class="modal-body">
+    <p><strong>Êtes-vous sûr de vouloir supprimer cette commande ?</strong></p>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary btn-rounded" (click)="modal.dismiss('cancel')">
+      Annuler
+    </button>
+
+    <button type="button" ngbAutofocus class="btn btn-wide btn-danger btn-rounded" (click)="modal.close('Ok')">
+      Supprimer
+    </button>
+  </div>
+</ng-template>
