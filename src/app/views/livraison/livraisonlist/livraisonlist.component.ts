@@ -30,16 +30,23 @@ export class LivraisonlistComponent implements OnInit {
   page = 1;
   pageSize = 8;
     commandes: BonLivraison[];
+    commandeschercher: BonLivraison[];
     countries$: Observable<Country[]>;
     bonCommande$: Observable<BonLivraison[]>;
     total$: Observable<number>;
     headers: any;
-
+ Clients: any[] = [];
 	  collectionSize ;
 	  countries: Country[];
   pagination: any;
 filteredCommandes: BonLivraison[] = [];
+filteredCommandessearch: BonLivraison[] = [];
+
 searchTerm: string = '';
+  searchFilters = {
+  date: '',
+  client: null as number | null
+};
 
     constructor(
         private dl: DataLayerService,
@@ -57,6 +64,7 @@ searchTerm: string = '';
 
     ngOnInit() {
         this.loadInvoices();
+        this.loadClient();
     }
     onSort({ column, direction }: SortEvent) {
         // resetting other headers
@@ -82,6 +90,19 @@ searchTerm: string = '';
           console.error('commandes n\'est pas un tableau.');
         }
       }
+       openCommandeModal (modal: any) {
+      this.modalService.open(modal, { ariaLabelledBy: 'modal-basic-title', centered: true });
+
+    }
+    openSearchModal(content: any) {
+
+      this.modalService.open(content, {
+        size: 'xl',
+        centered: true,
+        scrollable: true
+      });
+
+    }
 
 print(element: any) {
   console.log('Données à imprimer > ', element);
@@ -343,6 +364,63 @@ searchBons(): void {
   );
 
   this.page = 1;
+}
+  loadClient() {
+      this.dl.getClients().subscribe(res => {
+        this.Clients = res;
+      });
+    }
+    closeSearchModal(modal: any) {
+
+  // Réinitialiser les filtres
+  this.searchFilters = {
+    date: '',
+    client: null
+  };
+
+  // Vider résultats
+  this.commandeschercher = [];
+
+  this.filteredCommandessearch= [];
+
+  // Fermer modal
+  modal.dismiss();
+
+}
+loadInvoicesbyDate() {
+
+  this.dl
+    .getLivraisonbyDate(
+      this.searchFilters.date,
+      this.searchFilters.client
+    )
+    .subscribe({
+
+      next: (res: any) => {
+
+        this.commandeschercher =
+          res.livraisons || [];
+
+        this.filteredCommandessearch =
+          [...this.commandeschercher];
+
+        console.log(
+          this.filteredCommandessearch
+        );
+
+      },
+
+      error: (err) => {
+
+        console.error(
+          'Erreur lors du chargement des livraisons',
+          err
+        );
+
+      }
+
+    });
+
 }
 
 

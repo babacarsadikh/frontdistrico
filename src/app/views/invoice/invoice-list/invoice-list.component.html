@@ -49,7 +49,7 @@
 
           <!-- Date commande -->
           <td [ngClass]="{'quantite-reste-positive': invoice.quantite_restante > 0, 'quantite-reste-nulle': invoice.quantite_restante === '0'}">
-            {{ invoice.date_commande | date:'short' }}
+            {{ invoice.date_commande | date:'dd/MM/yyyy HH:mm'  }}
           </td>
 
           <!-- Quantité restante -->

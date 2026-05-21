@@ -44,6 +44,20 @@ private apiUrl = 'https://api.districobon.com';
     getLivraison () :Observable<any[]>{
       return this.http.get<any[]>(`${this.apiUrl}/livraisons`);
    }
+  getLivraisonbyDate(date?: string,clientId?: number): Observable<any> {
+     let params: any = {};
+
+  if (date) {
+    params.date = date;
+  }
+
+  if (clientId) {
+    params.client_id = clientId;
+  }
+
+  return this.http.get<any>(`${this.apiUrl}/livraisons/search`,{ params });
+
+}
    getLivraisonById(id): Observable<any[]> {
       return this.http.get<any[]>(`${this.apiUrl}/livraisons/${id}`);
     }
