@@ -7,6 +7,19 @@
 </div>
 <div class="separator-breadcrumb border-top"></div>
 
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl" *ngFor="let item of [
+    {label:'Livraisons aujourd’hui', value:kpis.livraisons_aujourdhui || 0},
+    {label:'Livré aujourd’hui', value:(kpis.quantite_aujourdhui || 0) + ' m³'},
+    {label:'Livré ce mois', value:(kpis.quantite_mois || 0) + ' m³'},
+    {label:'Clients servis', value:kpis.clients_servis || 0},
+    {label:'Commandes en cours', value:kpis.commandes_en_cours || 0},
+    {label:'Commandes terminées', value:kpis.commandes_terminees || 0},
+    {label:'Reste à livrer', value:(kpis.quantite_restante || 0) + ' m³'}]">
+    <div class="card shadow-sm h-100"><div class="card-body py-3"><small class="text-muted">{{ item.label }}</small><h4 class="mb-0 text-primary">{{ item.value }}</h4></div></div>
+  </div>
+</div>
+
 <!-- ===================== SECTION FILTRES ===================== -->
 <div class="card mb-4 shadow-sm">
   <div class="card-body">

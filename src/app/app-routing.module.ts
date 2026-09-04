@@ -65,6 +65,10 @@ const adminRoutes: Routes = [
   {
     path: 'operateur',
     loadChildren: () => import('./views/operateur/operateur.module').then(m => m.OperateurModule)
+  },
+  {
+    path: 'rapports',
+    loadChildren: () => import('./views/rapports/rapports.module').then(m => m.RapportsModule)
   }
   ];
 

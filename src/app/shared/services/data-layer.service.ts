@@ -32,6 +32,29 @@ private apiUrl = 'https://api.districobon.com';
 
     constructor(private http: HttpClient) { }
 
+    getReports(): Observable<any> {
+      return this.http.get<any>(`${this.apiUrl}/rapports`);
+    }
+    getDashboardKpis(): Observable<any> {
+      return this.http.get<any>(`${this.apiUrl}/rapports/kpis`);
+    }
+
+    previewReport(filters: any): Observable<any> {
+      return this.http.get<any>(`${this.apiUrl}/rapports/apercu`, { params: filters });
+    }
+
+    generateReport(filters: any): Observable<any> {
+      return this.http.post<any>(`${this.apiUrl}/rapports/generer`, filters);
+    }
+
+    regenerateReport(id: number): Observable<any> {
+      return this.http.post<any>(`${this.apiUrl}/rapports/${id}/regenerer`, {});
+    }
+
+    downloadReport(id: number, format: 'pdf'|'excel'): Observable<Blob> {
+      return this.http.get(`${this.apiUrl}/rapports/${id}/${format}`, { responseType: 'blob' });
+    }
+
     getInvoices() : Observable<any[]>{
         return this.http.get<any[]>(`${this.apiUrl}/rapports`);
     }
@@ -114,6 +137,9 @@ getLivraisonPlageDate(date_debut: string, date_fin: string): Observable<any[]> {
     }
     getClients(): Observable<any[]> {
       return this.http.get<any[]>(`${this.apiUrl}/clients`);
+    }
+    getChantiers(): Observable<any[]> {
+      return this.http.get<any[]>(`${this.apiUrl}/chantiers`);
     }
       getClientsChantier( idClient : number): Observable<any[]> {
       return this.http.get<any[]>(`${this.apiUrl}/clients/${idClient}`);

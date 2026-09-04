@@ -40,6 +40,7 @@ export class DashboardV2Component implements OnInit {
   livraison = 0;
   totalalivre = 0;
   nmbrelivraison = 0;
+  kpis: any = {};
 
   // === Graphe ApexCharts ===
   chartOptions: Partial<ChartOptions> | any = null;
@@ -56,6 +57,7 @@ userName: string = '';
     this.getCommandeLength();
     this.getCommande();
     this.getLivraisonToday();
+    this.dl.getDashboardKpis().subscribe({ next: value => this.kpis = value, error: () => this.kpis = {} });
 
       const userData = localStorage.getItem('user');
    console.log (userData)

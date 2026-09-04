@@ -1,0 +1,47 @@
+<div class="breadcrumb"><h1>Rapports</h1></div>
+<div class="separator-breadcrumb border-top"></div>
+
+<div class="card mb-4"><div class="card-body">
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <button class="btn btn-primary" (click)="selectPeriod('today')">Aujourd’hui</button>
+    <button class="btn btn-outline-primary" (click)="selectPeriod('yesterday')">Hier</button>
+    <button class="btn btn-outline-primary" (click)="selectPeriod('week')">Cette semaine</button>
+    <button class="btn btn-outline-primary" (click)="selectPeriod('month')">Ce mois</button>
+  </div>
+  <div class="row g-3 align-items-end">
+    <div class="col-md-4"><label>Date début</label><input class="form-control" type="date" [(ngModel)]="filters.date_debut"></div>
+    <div class="col-md-4"><label>Date fin</label><input class="form-control" type="date" [(ngModel)]="filters.date_fin"></div>
+    <div class="col-md-4 d-flex gap-2"><button class="btn btn-outline-primary flex-fill" (click)="loadPreview()" [disabled]="loading">Afficher</button><button class="btn btn-primary flex-fill" (click)="generate()" [disabled]="generating">Générer PDF/Excel</button></div>
+  </div>
+  <div class="row g-3 mt-1">
+    <div class="col-md-3"><label>Client</label><select class="form-select" [(ngModel)]="filters.client_id"><option value="">Tous</option><option *ngFor="let x of clients" [value]="x.id">{{ x.entreprise || ((x.prenom || '') + ' ' + x.nom) }}</option></select></div>
+    <div class="col-md-3"><label>Chantier</label><select class="form-select" [(ngModel)]="filters.chantier_id"><option value="">Tous</option><option *ngFor="let x of chantiers" [value]="x.id">{{ x.nom_chantier }}</option></select></div>
+    <div class="col-md-3"><label>Chauffeur</label><select class="form-select" [(ngModel)]="filters.chauffeur_id"><option value="">Tous</option><option *ngFor="let x of chauffeurs" [value]="x.id">{{ x.prenom }} {{ x.nom }}</option></select></div>
+    <div class="col-md-3"><label>Commande</label><select class="form-select" [(ngModel)]="filters.commande_id"><option value="">Toutes</option><option *ngFor="let x of commandes" [value]="x.id">{{ x.reference }}</option></select></div>
+  </div>
+</div></div>
+
+<div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+<ng-container *ngIf="report">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3" *ngFor="let kpi of [
+      {l:'Livraisons',v:report.indicateurs.nombre_livraisons},
+      {l:'Commandes',v:report.indicateurs.nombre_commandes},
+      {l:'Quantité livrée',v:(report.indicateurs.quantite_livree | number:'1.2-2')+' m³'},
+      {l:'Quantité restante',v:(report.indicateurs.quantite_restante | number:'1.2-2')+' m³'}]">
+      <div class="card h-100"><div class="card-body"><small>{{ kpi.l }}</small><h3>{{ kpi.v }}</h3></div></div>
+    </div>
+  </div>
+  <div class="card mb-4"><div class="card-body table-responsive">
+    <h4>Détail des livraisons</h4>
+    <table class="table table-hover"><thead><tr><th>Heure</th><th>Bon</th><th>Commande</th><th>Client</th><th>Chantier</th><th>Chauffeur</th><th>Quantité</th></tr></thead>
+      <tbody><tr *ngFor="let row of report.livraisons"><td>{{ row.heure_depart | date:'HH:mm' }}</td><td>{{ row.bon_reference }}</td><td>{{ row.commande_reference }}</td><td>{{ row.client }}</td><td>{{ row.chantier || '—' }}</td><td>{{ row.chauffeur || '—' }}</td><td>{{ row.quantite_chargee | number:'1.2-2' }} m³</td></tr></tbody>
+    </table>
+  </div></div>
+</ng-container>
+
+<div class="card"><div class="card-body table-responsive"><h4>Historique des rapports</h4>
+  <table class="table"><thead><tr><th>Date</th><th>Livraisons</th><th>Quantité livrée</th><th>Clients</th><th>Généré le</th><th>Statut</th><th>Actions</th></tr></thead>
+    <tbody><tr *ngFor="let item of history"><td>{{ item.date_rapport | date:'dd/MM/yyyy' }}</td><td>{{ item.nombre_livraisons }}</td><td>{{ item.quantite_livree }} m³</td><td>{{ item.nombre_clients }}</td><td>{{ item.generated_at | date:'dd/MM/yyyy HH:mm' }}</td><td>{{ item.statut }}</td><td class="d-flex gap-1"><button class="btn btn-sm btn-outline-primary" (click)="download(item.id,'pdf')">PDF</button><button class="btn btn-sm btn-outline-success" (click)="download(item.id,'excel')">Excel</button><button class="btn btn-sm btn-outline-secondary" (click)="regenerate(item)">Régénérer</button></td></tr></tbody>
+  </table>
+</div></div>

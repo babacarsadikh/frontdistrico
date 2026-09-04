@@ -85,6 +85,12 @@ export class NavigationService {
       state: '/client'
     },
     {
+      name: 'RAPPORTS',
+      type: 'link',
+      icon: 'i-File-Chart',
+      state: '/rapports'
+    },
+    {
       name: 'PARAMÈTRES',
       type: 'dropDown',
       icon: 'i-Gear',
@@ -127,6 +133,12 @@ export class NavigationService {
       type: 'link',
       icon: 'i-Business-ManWoman',
       state: '/client'
+    },
+    {
+      name: 'RAPPORTS',
+      type: 'link',
+      icon: 'i-File-Chart',
+      state: '/rapports'
     },
      {
       name: 'FORMULATIONS',
